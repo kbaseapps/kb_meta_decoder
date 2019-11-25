@@ -3,7 +3,7 @@
     "authors": [
         "jmc"
     ],
-    "contact": "",
+    "contact": "http://kbase.us/contact-us/",
     "categories": ["active"],
     "widgets": {
         "input": null,
@@ -11,8 +11,19 @@
     },
     "parameters": [ 
         {
-            "id": "parameter_1",
-            "optional": true,
+            "id": "assembly_ref",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "valid_ws_types": [ "KBaseGenomeAnnotations.Assembly"]
+            }
+        },
+        {
+            "id": "mapped_reads_ref",
+            "optional": false,
             "advanced": false,
             "allow_multiple": false,
             "default_values": [ "" ],
@@ -26,7 +37,7 @@
         "service-mapping": {
             "url": "",
             "name": "kb_meta_decoder",
-            "method": "run_kb_meta_decoder",
+            "method": "call_variants",
             "input_mapping": [
                 {
                     "narrative_system_variable": "workspace",
@@ -35,8 +46,13 @@
                     "narrative_system_variable": "workspace_id",
                     "target_property": "workspace_id"
                 },{
-                    "input_parameter": "parameter_1",
-                    "target_property": "parameter_1"
+                    "input_parameter": "assembly_ref",
+                    "target_property": "assembly_ref",
+                    "target_type_transform": "resolved-ref"
+                },{
+                    "input_parameter": "mapped_reads_ref",
+                    "target_property": "mapped_reads_ref",
+                    "target_type_transform": "resolved-ref"
                 }
             ],
             "output_mapping": [

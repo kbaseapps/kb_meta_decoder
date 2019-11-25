@@ -1,0 +1,48 @@
+#
+# define display information
+#
+name: Map Reads to a Reference Sequence
+
+tooltip: |
+    Map short reads to a reference sequence with SAMtools
+
+screenshots: []
+
+icon: icon.png
+
+#
+# define a set of similar apps that might be useful to the user
+#
+suggestions:
+    apps:
+        related:
+            []
+        next:
+            []
+
+#
+# Configure the display and description of parameters
+#
+parameters :
+    assembly_ref :
+        ui-name : |
+            Reference assembly
+        short-hint : |
+            The reference assembly to which reads will be mapped.
+
+    reads_ref :
+        ui-name : |
+            Reads to map
+        short-hint : |
+            These reads will be mapped to the reference assembly.
+
+description : |
+    <p>This method uses Burrows-Wheeler Aligner (BWA) to index a reference assembly, then align a set of short reads to it using the BWA-MEM algorithm.  A Sequence/Alignment Map object is created to store the result.
+
+    <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
+publications :
+    -
+        display-text: |
+             Li H, Durbin R. Fast and accurate short read alignment with Burrows–Wheeler transform. Bioinformatics. 2017. 25(14):1754–1760, doi:10.1093/bioinformatics/btp324
+        link: https://academic.oup.com/bioinformatics/article/25/14/1754/225615

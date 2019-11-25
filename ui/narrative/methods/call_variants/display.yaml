@@ -1,0 +1,48 @@
+#
+# define display information
+#
+name: Call Variants
+
+tooltip: |
+    Call variants relative to a reference sequence, with SAMtools mpileup
+
+screenshots: []
+
+icon: icon.png
+
+#
+# define a set of similar apps that might be useful to the user
+#
+suggestions:
+    apps:
+        related:
+            []
+        next:
+            []
+
+#
+# Configure the display and description of parameters
+#
+parameters :
+    assembly_ref :
+        ui-name : |
+            Reference assembly
+        short-hint : |
+            The reference assembly for which variants will be called.
+
+    mapped_reads_ref :
+        ui-name : |
+            Mapped Reads
+        short-hint : |
+            These mapped reads will be used to call variants.
+
+description : |
+    <p>This method uses BCFtools to call variants in a reference assembly.  You must have already mapped short reads to this assembly, thus creating a Sequence/Alignment Map object that is used as input to this app.
+
+    <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
+publications :
+    -
+        display-text: |
+             Li H. A statistical framework for SNP calling, mutation discovery, association mapping and population genetical parameter estimation from sequencing data. Bioinformatics. 2011. 27(21):2987–2993. doi:10.1093/bioinformatics/btr509
+        link: https://academic.oup.com/bioinformatics/article/27/21/2987/217423

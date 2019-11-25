@@ -2,7 +2,7 @@ module-name:
     kb_meta_decoder
 
 module-description:
-    A KBase module
+    KBase wrapper for meta_decoder
 
 service-language:
     python

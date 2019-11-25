@@ -8,9 +8,27 @@ module kb_meta_decoder {
         string report_ref;
     } ReportResults;
 
-    /*
-        This example function accepts any number of parameters and returns results in a KBaseReport
-    */
-    funcdef run_kb_meta_decoder(mapping<string,UnspecifiedObject> params) returns (ReportResults output) authentication required;
+    typedef structure {
+	string workspace_name;
+	string workspace_id;
+        string assembly_ref;
+        string reads_ref;
+    } MapReadsParams;
 
+    typedef structure {
+	string workspace_name;
+	string workspace_id;
+        string assembly_ref;
+        string mapped_reads_ref;
+    } CallVariantsParams;
+
+    /**
+      Map reads to a reference assembly
+    */
+    funcdef map_reads_to_reference(MapReadsParams params) returns (ReportResults output) authentication required;
+
+    /**
+      Call variants in a reference assembly, based on mapped reads
+    */
+    funcdef call_variants(CallVariantsParams params) returns (ReportResults output) authentication required;
 };
