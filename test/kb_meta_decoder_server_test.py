@@ -53,7 +53,7 @@ class kb_meta_decoderTest(unittest.TestCase):
             print('Test workspace was deleted')
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    def test_your_method(self):
+    def test_map_reads(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
         #                                  'objects': []})
@@ -63,5 +63,13 @@ class kb_meta_decoderTest(unittest.TestCase):
         #
         # Check returned data with
         # self.assertEqual(ret[...], ...) or other unittest methods
-        ret = self.serviceImpl.run_kb_meta_decoder(self.ctx, {'workspace_name': self.wsName,
-                                                             'parameter_1': 'Hello World!'})
+
+        # these test objects are in appdev:
+        test_ws_name = "jmc:narrative_1576867921697"
+        test_ws_id = "35222"
+        test_assembly = "35222/2/1"
+        test_reads = "35222/3/1"
+        ret = self.serviceImpl.map_reads_to_reference(self.ctx, {'workspace_name': test_ws_name,
+                                                                 'workspace_id': test_ws_id,
+                                                                 'assembly_ref' : test_assembly,
+                                                                 'reads_ref' : test_reads})

@@ -338,10 +338,14 @@ class Application(object):
         self.serverlog.set_log_level(6)
         self.rpc_service = JSONRPCServiceCustom()
         self.method_authentication = dict()
-        self.rpc_service.add(impl_kb_meta_decoder.run_kb_meta_decoder,
-                             name='kb_meta_decoder.run_kb_meta_decoder',
+        self.rpc_service.add(impl_kb_meta_decoder.map_reads_to_reference,
+                             name='kb_meta_decoder.map_reads_to_reference',
                              types=[dict])
-        self.method_authentication['kb_meta_decoder.run_kb_meta_decoder'] = 'required'  # noqa
+        self.method_authentication['kb_meta_decoder.map_reads_to_reference'] = 'required'  # noqa
+        self.rpc_service.add(impl_kb_meta_decoder.call_variants,
+                             name='kb_meta_decoder.call_variants',
+                             types=[dict])
+        self.method_authentication['kb_meta_decoder.call_variants'] = 'required'  # noqa
         self.rpc_service.add(impl_kb_meta_decoder.status,
                              name='kb_meta_decoder.status',
                              types=[dict])
