@@ -4,6 +4,7 @@ import sys
 import logging
 import os
 import uuid
+import subprocess
 from pprint import pprint, pformat
 
 from installed_clients.AssemblyUtilClient import AssemblyUtil as AUClient
@@ -40,12 +41,83 @@ class kb_meta_decoder:
         print(message)
         sys.stdout.flush()
 
+    # get the contigs from the genome as FASTA
+    def download_assembly(self, token, assembly_ref):
+        SERVICE_VER = 'release'
+
+        try:
+            auClient = AUClient(self.callback_url, token=token, service_ver=SERVICE_VER)
+        except Exception as e:
+            raise ValueError('Unable to instantiate auClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
+        try:
+            dfuClient = DFUClient(self.callback_url, token=token, service_ver=SERVICE_VER)
+        except Exception as e:
+            raise ValueError('Unable to instantiate dfuClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
+
+        contig_file = auClient.get_assembly_as_fasta({'ref':assembly_ref}).get('path')
+        sys.stdout.flush()   # don't remember why this matters
+        contig_file_path = dfuClient.unpack_file({'file_path': contig_file})['file_path']
+        return contig_file_path
+
+    # get the reads as FASTQ
+    def download_reads(self, token, reads_ref):
+        try:
+            readsUtils_Client = ReadsUtils (url=self.callback_url, token=token)  # SDK local                   
+
+            readsLibrary = readsUtils_Client.download_reads ({'read_libraries': [reads_ref],
+                                                                 'interleaved': 'true'                                                              
+            })
+            reads_file_path = readsLibrary['files'][reads_ref]['files']['fwd']
+        except Exception as e:
+            raise ValueError('Unable to get reads library object from workspace: (' + reads_ref +")\n" + str(e))
+
+        return reads_file_path
+
+    # run samtools to map reads
+    def map_reads(self, console, input_contigs, input_reads):
+        try:
+            # first index the contigs
+            cmdstring = "/bwa/bwa index "+input_contigs
+
+            cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            for line in cmdProcess.stdout:
+                print(line)
+            cmdProcess.wait()
+            self.log(console, 'return code: ' + str(cmdProcess.returncode)+ '\n')
+            if cmdProcess.returncode != 0:
+                raise ValueError('Error running bwa index, return code: ' +
+                                 str(cmdProcess.returncode) + '\n')
+
+            # store output
+            bam_file_path = os.path.join(self.scratch,"bam_file_"+str(uuid.uuid4())+".bam")
+
+            # then map the reads
+            cmdstring = "/bwa/bwa mem "+input_contigs+" "+input_reads+"|samtools view -S -b >"+bam_file_path
+            cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            for line in cmdProcess.stdout:
+                print(line)
+            cmdProcess.wait()
+            self.log(console, 'return code: ' + str(cmdProcess.returncode)+ '\n')
+            if cmdProcess.returncode != 0:
+                raise ValueError('Error running samtools, return code: ' +
+                                 str(cmdProcess.returncode) + '\n')
+
+            if not os.path.isfile(bam_file_path) \
+                or os.path.getsize (bam_file_path) == 0:
+                raise ValueError('Error generating samtools output\n')
+
+        except Exception as e:
+            raise ValueError('Unable to map reads\n' + str(e))
+
+        return bam_file_path
+
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
     # be found
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
+        self.scratch = os.path.abspath(config['scratch'])
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.shared_folder = config['scratch']
         logging.basicConfig(format='%(created)s %(levelname)s: %(message)s',
@@ -75,8 +147,6 @@ class kb_meta_decoder:
         env = os.environ.copy()
         env['KB_AUTH_TOKEN'] = token
 
-        SERVICE_VER = 'release'
-
         # param checks
         required_params = ['workspace_name',
                            'workspace_id',
@@ -94,61 +164,42 @@ class kb_meta_decoder:
         provenance[0]['input_ws_objects']=[str(params['assembly_ref']),str(params['reads_ref'])]
 
         # get the contigs from the genome as FASTA
-        try:
-            auClient = AUClient(self.callback_url, token=ctx['token'], service_ver=SERVICE_VER)
-        except Exception as e:
-            raise ValueError('Unable to instantiate auClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
-        try:
-            dfuClient = DFUClient(self.callback_url, token=ctx['token'], service_ver=SERVICE_VER)
-        except Exception as e:
-            raise ValueError('Unable to instantiate dfuClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
-
-        contig_file = auClient.get_assembly_as_fasta({'ref':params['assembly_ref']}).get('path')
-        sys.stdout.flush()   # don't remember why this matters
-        contig_file_path = dfuClient.unpack_file({'file_path': contig_file})['file_path']
+        contigs_file_path = self.download_assembly(token, params['assembly_ref'])
 
         # get the reads as FASTQ
-        try:
-            readsUtils_Client = ReadsUtils (url=self.callback_url, token=ctx['token'])  # SDK local                   
-
-            readsLibrary = readsUtils_Client.download_reads ({'read_libraries': [params['reads_ref']],
-                                                                 'interleaved': 'true'                                                              
-            })
-            reads_file_path = readsLibrary['files'][params['reads_ref']]['files']['fwd']
-        except Exception as e:
-            raise ValueError('Unable to get read library object from workspace: (' + str(params['reads_ref']) +")\n" + str(e))
-
+        reads_file_path = self.download_reads(token, params['reads_ref'])
 
         # run samtools
-        print("got contigs as "+contig_file_path)
-        print("got reads as "+reads_file_path);
-
-
+        print("got contigs as "+contigs_file_path)
+        print("got reads as "+reads_file_path)
+        bam_file_path = self.map_reads(console,contigs_file_path,reads_file_path)
+        print("got bam output "+bam_file_path)
 
         # build report
         #
         reportName = 'kb_map_reads_report_'+str(uuid.uuid4())
 
         reportObj = {'objects_created': [],
-                     'message': '',
+                     'message': "\n".join(console),
                      'direct_html': None,
-                     'direct_html_index': 0,
+                     'direct_html_link_index': 0,
                      'file_links': [],
                      'html_links': [],
                      'html_window_height': 220,
-                     'workspace_name': params['input_ws'],
+                     'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
 
         # text report
         try:
-            reportObj['message'] = report
-            msg = report
+            reportObj['message'] = "\n".join(console)
+            msg = "\n".join(console)
         except:
             raise ValueError ("no report generated")
 
         # save report object
         #
+        SERVICE_VER = 'release'
         report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=SERVICE_VER)
         report_info = report.create_extended_report(reportObj)
 
