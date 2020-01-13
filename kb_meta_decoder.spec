@@ -19,16 +19,16 @@ module kb_meta_decoder {
 	string workspace_name;
 	string workspace_id;
         string assembly_ref;
-        string mapped_reads_ref;
+        string reads_ref;  /* should be: string mapped_reads_ref; */
     } CallVariantsParams;
 
     /**
-      Map reads to a reference assembly
+      Map reads to a reference assembly.  Should save BAM-like object.
     */
     funcdef map_reads_to_reference(MapReadsParams params) returns (ReportResults output) authentication required;
 
     /**
-      Call variants in a reference assembly, based on mapped reads
+      Call variants in a reference assembly.  Should be based on mapped reads (BAM file), and save VCF-like object.
     */
     funcdef call_variants(CallVariantsParams params) returns (ReportResults output) authentication required;
 };

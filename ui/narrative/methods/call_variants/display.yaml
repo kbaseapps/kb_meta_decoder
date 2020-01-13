@@ -30,14 +30,14 @@ parameters :
         short-hint : |
             The reference assembly for which variants will be called.
 
-    mapped_reads_ref :
+    reads_ref :
         ui-name : |
-            Mapped Reads
+            Reads
         short-hint : |
-            These mapped reads will be used to call variants.
+            These reads will be mapped and then used to call variants.
 
 description : |
-    <p>This method uses BCFtools to call variants in a reference assembly.  You must have already mapped short reads to this assembly, thus creating a Sequence/Alignment Map object that is used as input to this app.
+    <p>This method uses BCFtools to call variants in a reference assembly.  It will first map short reads to this assembly.
 
     <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
 
