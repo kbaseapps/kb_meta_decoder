@@ -77,13 +77,14 @@ class kb_meta_decoder:
     def map_reads(self, console, input_contigs, input_reads):
         try:
             # first index the contigs
+            self.log(console,"Indexing contigs.\n");
             cmdstring = "/bwa/bwa index "+input_contigs
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line)
             cmdProcess.wait()
-            self.log(console, 'return code: ' + str(cmdProcess.returncode)+ '\n')
+            print('return code: ' + str(cmdProcess.returncode))
             if cmdProcess.returncode != 0:
                 raise ValueError('Error running bwa index, return code: ' +
                                  str(cmdProcess.returncode) + '\n')
@@ -92,12 +93,13 @@ class kb_meta_decoder:
             bam_file_path = os.path.join(self.scratch,"bam_file_"+str(uuid.uuid4())+".bam")
 
             # then map the reads
+            self.log(console,"Mapping reads to contigs.\n");
             cmdstring = "/bwa/bwa mem "+input_contigs+" "+input_reads+"|samtools view -S -b >"+bam_file_path
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line)
             cmdProcess.wait()
-            self.log(console, 'return code: ' + str(cmdProcess.returncode)+ '\n')
+            print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
                 raise ValueError('Error running samtools, return code: ' +
                                  str(cmdProcess.returncode) + '\n')
@@ -118,13 +120,14 @@ class kb_meta_decoder:
             sorted_bam_file_path = os.path.join(self.scratch,"sorted_bam_file_"+str(uuid.uuid4())+".bam")
 
             # run sort
+            self.log(console,"Sorting mapped reads.\n");
             cmdstring = "samtools sort "+bam_file_path+" -o "+sorted_bam_file_path
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line)
             cmdProcess.wait()
-            self.log(console, 'return code: ' + str(cmdProcess.returncode)+ '\n')
+            print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
                 raise ValueError('Error running samtools sort, return code: ' +
                                  str(cmdProcess.returncode) + '\n')
@@ -138,13 +141,14 @@ class kb_meta_decoder:
     def index_bam(self, console, bam_file_path):
         try:
             # run index
+            self.log(console,"Indexing mapped reads.\n");
             cmdstring = "samtools index "+bam_file_path
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line)
             cmdProcess.wait()
-            self.log(console, 'return code: ' + str(cmdProcess.returncode)+ '\n')
+            print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
                 raise ValueError('Error running samtools index, return code: ' +
                                  str(cmdProcess.returncode) + '\n')
@@ -161,13 +165,14 @@ class kb_meta_decoder:
             vcf_file_path = os.path.join(self.scratch,"vcf_"+str(uuid.uuid4())+".vcf")
 
             # run mpileup
+            self.log(console,"Calling variants.\n");
             cmdstring = "bcftools mpileup -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call -mv > "+vcf_file_path
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line)
             cmdProcess.wait()
-            self.log(console, 'return code: ' + str(cmdProcess.returncode)+ '\n')
+            print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
                 raise ValueError('Error running bcftools, return code: ' +
                                  str(cmdProcess.returncode) + '\n')

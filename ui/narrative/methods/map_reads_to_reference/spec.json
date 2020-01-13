@@ -4,10 +4,10 @@
         "jmc"
     ],
     "contact": "http://kbase.us/contact-us/",
-    "categories": ["active"],
+    "categories": ["active","communities"],
     "widgets": {
         "input": null,
-        "output": null
+        "output": "no-display"
     },
     "parameters": [ 
         {
