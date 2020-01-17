@@ -1,0 +1,48 @@
+#
+# define display information
+#
+name: Calculate population statistics, using meta_decoder
+
+tooltip: |
+    Calculate population statistics, using meta_decoder
+
+screenshots: []
+
+icon: icon.png
+
+#
+# define a set of similar apps that might be useful to the user
+#
+suggestions:
+    apps:
+        related:
+            []
+        next:
+            []
+
+#
+# Configure the display and description of parameters
+#
+parameters :
+    assembly_ref :
+        ui-name : |
+            Reference assembly
+        short-hint : |
+            The reference assembly for which variants will be called.
+
+    reads_ref :
+        ui-name : |
+            Reads
+        short-hint : |
+            These reads will be mapped and then used to call variants.
+
+description : |
+    <p>This method uses meta_decoder to calculate population statistics in a set of strains inferred from mapping reads to a reference genome.
+
+    <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
+publications :
+    -
+        display-text: |
+             Li H. A statistical framework for SNP calling, mutation discovery, association mapping and population genetical parameter estimation from sequencing data. Bioinformatics. 2011. 27(21):2987–2993. doi:10.1093/bioinformatics/btr509
+        link: https://academic.oup.com/bioinformatics/article/27/21/2987/217423

@@ -22,6 +22,13 @@ module kb_meta_decoder {
         string reads_ref;  /* should be: string mapped_reads_ref; */
     } CallVariantsParams;
 
+    typedef structure {
+	string workspace_name;
+	string workspace_id;
+        string assembly_ref;
+        string reads_ref;  /* should be: string mapped_reads_ref; */
+    } CalcPopStatsParams;
+
     /**
       Map reads to a reference assembly.  Should save BAM-like object.
     */
@@ -31,4 +38,9 @@ module kb_meta_decoder {
       Call variants in a reference assembly.  Should be based on mapped reads (BAM file), and save VCF-like object.
     */
     funcdef call_variants(CallVariantsParams params) returns (ReportResults output) authentication required;
+
+    /**
+      Calculates population statistics
+    */
+    funcdef calculate_population_statistics(CalcPopStatsParams params) returns (ReportResults output) authentication required;
 };

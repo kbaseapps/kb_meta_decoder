@@ -346,6 +346,10 @@ class Application(object):
                              name='kb_meta_decoder.call_variants',
                              types=[dict])
         self.method_authentication['kb_meta_decoder.call_variants'] = 'required'  # noqa
+        self.rpc_service.add(impl_kb_meta_decoder.calculate_population_statistics,
+                             name='kb_meta_decoder.calculate_population_statistics',
+                             types=[dict])
+        self.method_authentication['kb_meta_decoder.calculate_population_statistics'] = 'required'  # noqa
         self.rpc_service.add(impl_kb_meta_decoder.status,
                              name='kb_meta_decoder.status',
                              types=[dict])
