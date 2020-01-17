@@ -225,7 +225,7 @@ class kb_meta_decoder:
     def setup_paths(self, console):
         try:
             self.log(console,"Setting up meta_decoder paths.\n");
-            cmdstring = "cd /meta_decoder && git pull && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s /kb/module/work/tmp/*.fastq . && ln -s /kb/module/work/*.fa . && cd .. && mkdir output_dir"
+            cmdstring = "cd /meta_decoder && git pull && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s /kb/module/work/tmp/*.fastq . && ln -s /kb/module/work/tmp/*.fa . && cd .. && mkdir output_dir"
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line)
