@@ -82,7 +82,7 @@ class kb_meta_decoder:
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                print(line)
+                print(line.decode("utf-8").rstrip())
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode))
             if cmdProcess.returncode != 0:
@@ -97,7 +97,7 @@ class kb_meta_decoder:
             cmdstring = "/bwa/bwa mem "+input_contigs+" "+input_reads+"|samtools view -S -b >"+bam_file_path
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                print(line)
+                print(line.decode("utf-8").rstrip())
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
@@ -145,7 +145,7 @@ class kb_meta_decoder:
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                print(line)
+                print(line.decode("utf-8").rstrip())
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
@@ -166,7 +166,7 @@ class kb_meta_decoder:
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                print(line)
+                print(line.decode("utf-8").rstrip())
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
@@ -190,7 +190,7 @@ class kb_meta_decoder:
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                print(line)
+                print(line.decode("utf-8").rstrip())
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
@@ -228,7 +228,7 @@ class kb_meta_decoder:
             cmdstring = "cd /meta_decoder && git pull && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s /kb/module/work/tmp/*.fastq . && ln -s /kb/module/work/tmp/*.fa . && cd .. && mkdir output_dir"
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                print(line)
+                print(line.decode("utf-8").rstrip())
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
@@ -248,7 +248,7 @@ class kb_meta_decoder:
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                print(line)
+                print(line.decode("utf-8").rstrip())
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
@@ -268,7 +268,7 @@ class kb_meta_decoder:
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                print(line)
+                print(line.decode("utf-8").rstrip())
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
@@ -543,7 +543,7 @@ class kb_meta_decoder:
         self.make_html(console)
 
         # load in an example html file
-        html_file_path = "/meta_decoder/output_dir/"+os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path).replace(".fa_assembly.fa",".fa")+".flt.vcf.Tajima.D.html"
+        html_file_path = "/meta_decoder/output_dir/"+os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf.Tajima.D.html"
         with open(html_file_path, "r") as html_file:
             html_output=html_file.readlines()
 
