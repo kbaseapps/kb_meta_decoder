@@ -121,7 +121,7 @@ class kb_meta_decoder:
             cmdstring = "samtools flagstat "+bam_file_path
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                self.log(console,str(line))
+                self.log(console,line.decode("utf-8"))
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
@@ -209,7 +209,7 @@ class kb_meta_decoder:
             cmdstring = "bcftools stats "+vcf_file_path
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
-                self.log(console,str(line))
+                self.log(console,line.decode("utf-8"))
             cmdProcess.wait()
             print('return code: ' + str(cmdProcess.returncode)+ '\n')
             if cmdProcess.returncode != 0:
