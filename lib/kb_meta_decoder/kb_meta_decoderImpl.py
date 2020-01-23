@@ -34,6 +34,7 @@ class kb_meta_decoder:
     GIT_COMMIT_HASH = "b5ac2935324fdbde2415cc82099f915df158be24"
 
     #BEGIN_CLASS_HEADER
+    SERVICE_VER = 'release'
 
     def log(self, target, message):
         if target is not None:
@@ -43,14 +44,12 @@ class kb_meta_decoder:
 
     # get the contigs from the genome as FASTA
     def download_assembly(self, token, assembly_ref):
-        SERVICE_VER = 'release'
-
         try:
-            auClient = AUClient(self.callback_url, token=token, service_ver=SERVICE_VER)
+            auClient = AUClient(self.callback_url, token=token, service_ver=self.SERVICE_VER)
         except Exception as e:
             raise ValueError('Unable to instantiate auClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
         try:
-            dfuClient = DFUClient(self.callback_url, token=token, service_ver=SERVICE_VER)
+            dfuClient = DFUClient(self.callback_url, token=token, service_ver=self.SERVICE_VER)
         except Exception as e:
             raise ValueError('Unable to instantiate dfuClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
 
@@ -264,7 +263,7 @@ class kb_meta_decoder:
     def make_html(self, console):
         try:
             self.log(console,"Making HTML.\n");
-            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T"
+            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T && ls -altr /meta_decoder/output_dir"
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
@@ -372,8 +371,7 @@ class kb_meta_decoder:
 
         # save report object
         #
-        SERVICE_VER = 'release'
-        report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=SERVICE_VER)
+        report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
         report_info = report.create_extended_report(reportObj)
 
         output = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
@@ -475,8 +473,7 @@ class kb_meta_decoder:
 
         # save report object
         #
-        SERVICE_VER = 'release'
-        report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=SERVICE_VER)
+        report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
         report_info = report.create_extended_report(reportObj)
 
         output = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
@@ -542,26 +539,75 @@ class kb_meta_decoder:
         # make HTML
         self.make_html(console)
 
-        # load in an example html file
-        html_file_path = "/meta_decoder/output_dir/"+os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf.Tajima.D.html"
-        with open(html_file_path, "r") as html_file:
-            html_output=html_file.readlines()
+        html_output = "<p><b>MetaDecoder output</b>:<ul>"
+        suffixes = {".sites.pi": "Nucleotide_diversity per site",
+                    ".windowed.pi": "Nucleotide_diversity per 1000bp",
+                    ".frq": "Allele frequency for each site",
+                    ".frq.count": "Raw allele counts for each site",
+                    ".TsTv": "Transition / Transversion ratio in bins of size 1000bp",
+                    ".TsTv.summary": "Simple summary of all Transitions and Transversions",
+                    ".TsTv.count": "Transition / Transversion ratio as a function of alternative allele count",
+                    ".het": "Measure of heterozygosity on a per-individual basis",
+                    ".hwe": "p-value for each site from a Hardy-Weinberg Equilibrium test",
+                    ".Tajima.D": "Tajima D statistic in bins with size of 1000bp",
+                    ".relatedness": "Relatedness statistic of unadjusted Ajk statistic<br>Expectation of Ajk is zero for individuals within a populations, and one for an individual with themselves",
+                    ".snpden": "Number and density of SNPs in bins of size of 1000bp",
+                    ".indel.hist": "Histogram file of the length of all indels (including SNPs)"}
+
+        # build index of files / help
+        i = 0
+        for suffix, description in suffixes.items():
+            html_output+='<ul><a href="#out'+str(i)+'">'+suffix+' file</a>: '+description+"\n"
+            i+=1
+        html_output+="</ul>\n<p><b>Results:</b><p>\n"
+
+        # need another dfu client
+        try:
+            dfuClient = DFUClient(self.callback_url, token=token, service_ver=self.SERVICE_VER)
+        except Exception as e:
+            raise ValueError('Unable to instantiate dfuClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
+
+        # load in all the output
+        i = 0
+        output_files = []
+        for suffix, description in suffixes.items():
+            data_file_path = "/meta_decoder/output_dir/"+os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf"+suffix
+            if os.path.isfile(data_file_path):
+                print("LOADING "+data_file_path)
+                try:
+                    dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
+                                                          'make_handle': 0})
+                    output_files.append({'shock_id': dfu_output['shock_id'],
+                                         'name': 'meta_decoder_output'+suffix,
+                                         'label': suffix+' file'})
+                except:
+                    print("failed to load "+data_file_path)
+# output_dir/FW602-26-06-10-14_45461_6_2.inter1.1Gb.fastq_KBase_derived_FW602_bin_15_finished_annot.fa.flt.vcf.sites.pi
+                html_file_path = data_file_path+".html"
+                if os.path.isfile(html_file_path):
+                    html_output+='<a name="out'+str(i)+'"></a><b>'+suffix+' file</b>: '+description+"<p>\n"
+                    try:
+                        with open(html_file_path, "r") as html_file:
+                            html_output+="\n".join(html_file.readlines())+"<p>\n"
+                    except:
+                        print("failed to load "+html_file_path)
+            i+=1
 
         # build report
         reportName = 'kb_calc_pop_stats_report_'+str(uuid.uuid4())
 
         reportObj = {'objects_created': [],
                      'message': "",
-                     'direct_html': "\n".join(html_output),
+                     'direct_html': html_output,
                      'direct_html_link_index': None,
-                     'file_links': [],
+                     'file_links': output_files,
                      'html_links': [],
                      'html_window_height': 220,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
 
-        # text report
+        # make text part of report
         try:
             reportObj['message'] = "\n".join(console)
             msg = "\n".join(console)
