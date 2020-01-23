@@ -357,22 +357,16 @@ class kb_meta_decoder:
                      'direct_html_link_index': None,
                      'file_links': [],
                      'html_links': [],
-                     'html_window_height': 220,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
 
-        # text report
+        # save report object
         try:
-            reportObj['message'] = "\n".join(console)
-            msg = "\n".join(console)
+            report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+            report_info = report.create_extended_report(reportObj)
         except:
             raise ValueError ("no report generated")
-
-        # save report object
-        #
-        report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
-        report_info = report.create_extended_report(reportObj)
 
         output = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
 
@@ -459,22 +453,16 @@ class kb_meta_decoder:
                      'direct_html_link_index': None,
                      'file_links': [],
                      'html_links': [],
-                     'html_window_height': 220,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
 
-        # text report
+        # save report object
         try:
-            reportObj['message'] = "\n".join(console)
-            msg = "\n".join(console)
+            report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+            report_info = report.create_extended_report(reportObj)
         except:
             raise ValueError ("no report generated")
-
-        # save report object
-        #
-        report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
-        report_info = report.create_extended_report(reportObj)
 
         output = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
 
@@ -557,7 +545,7 @@ class kb_meta_decoder:
         # build index of files / help
         i = 0
         for suffix, description in suffixes.items():
-            html_output+='<ul><a href="#out'+str(i)+'">'+suffix+' file</a>: '+description+"\n"
+            html_output+='<li><a href="#out'+str(i)+'">'+suffix+' file</a>: '+description+"\n"
             i+=1
         html_output+="</ul>\n<p><b>Results:</b><p>\n"
 
@@ -573,7 +561,7 @@ class kb_meta_decoder:
         for suffix, description in suffixes.items():
             data_file_path = "/meta_decoder/output_dir/"+os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf"+suffix
             if os.path.isfile(data_file_path):
-                print("LOADING "+data_file_path)
+                print("LOADING "+data_file_path+"\n")
                 try:
                     dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
                                                           'make_handle': 0})
@@ -581,44 +569,37 @@ class kb_meta_decoder:
                                          'name': 'meta_decoder_output'+suffix,
                                          'label': suffix+' file'})
                 except:
-                    print("failed to load "+data_file_path)
-# output_dir/FW602-26-06-10-14_45461_6_2.inter1.1Gb.fastq_KBase_derived_FW602_bin_15_finished_annot.fa.flt.vcf.sites.pi
-                html_file_path = data_file_path+".html"
-                if os.path.isfile(html_file_path):
-                    html_output+='<a name="out'+str(i)+'"></a><b>'+suffix+' file</b>: '+description+"<p>\n"
-                    try:
-                        with open(html_file_path, "r") as html_file:
-                            html_output+="\n".join(html_file.readlines())+"<p>\n"
-                    except:
-                        print("failed to load "+html_file_path)
+                    print("failed to load "+data_file_path+"\n")
+                    # f6038840-e2a6-4262-af73-855eaccd9d1f.inter.fastq_KBase_derived_FW602_bin_15_finished_annot.fa_assembly.fa.flt.vcf.sites.pi
+                    # f6038840-e2a6-4262-af73-855eaccd9d1f.inter.fastq_KBase_derived_FW602_bin_15_finished_annot.fa_assembly.fa.flt.vcf.sites.pi
+            html_file_path = data_file_path+".html"
+            if os.path.isfile(html_file_path):
+                html_output+='<a name="out'+str(i)+'"></a><b>'+suffix+' file</b>: '+description+"<p>\n"
+                try:
+                    with open(html_file_path, "r") as html_file:
+                        html_output+="\n".join(html_file.readlines())+"<p>\n"
+                except:
+                    print("failed to load "+html_file_path+"\n")
             i+=1
 
         # build report
         reportName = 'kb_calc_pop_stats_report_'+str(uuid.uuid4())
 
         reportObj = {'objects_created': [],
-                     'message': "",
                      'direct_html': html_output,
                      'direct_html_link_index': None,
                      'file_links': output_files,
                      'html_links': [],
-                     'html_window_height': 220,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
 
-        # make text part of report
+        # save report object
         try:
-            reportObj['message'] = "\n".join(console)
-            msg = "\n".join(console)
+            report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+            report_info = report.create_extended_report(reportObj)
         except:
             raise ValueError ("no report generated")
-
-        # save report object
-        #
-        SERVICE_VER = 'release'
-        report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=SERVICE_VER)
-        report_info = report.create_extended_report(reportObj)
 
         output = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
 
