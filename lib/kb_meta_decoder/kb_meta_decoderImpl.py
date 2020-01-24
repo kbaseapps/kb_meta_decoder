@@ -270,7 +270,7 @@ class kb_meta_decoder:
     def make_html(self, console):
         try:
             self.log(console,"Making HTML.\n");
-            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T && ls -altr output_dir/"
+            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T"
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
@@ -358,7 +358,6 @@ class kb_meta_decoder:
         self.get_bam_stats(console,bam_file_path)
 
         # build report
-        #
         reportName = 'kb_map_reads_report_'+str(uuid.uuid4())
 
         reportObj = {'objects_created': [],
@@ -454,7 +453,6 @@ class kb_meta_decoder:
         self.get_vcf_stats(console,vcf_file_path)
 
         # build report
-        #
         reportName = 'kb_call_variants_report_'+str(uuid.uuid4())
 
         reportObj = {'objects_created': [],
@@ -557,10 +555,28 @@ class kb_meta_decoder:
         except Exception as e:
             raise ValueError('Unable to instantiate dfuClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
 
-        # load in all the output
-        i = 0
-        output_files = []
+        # make index/explanation of HTML output files
         output_html = []
+        html_message = "<p><b>MetaDecoder output</b>:<ul>"
+        for suffix, description in suffixes.items():
+            html_message+='<li><b>'+suffix+' file</b>: '+description+"\n"
+        html_message+="</ul>\n"
+        html_file_path = os.path.join(output_dir, 'kb_meta_decoder_report_index.html')
+        with open(html_file_path, 'w') as html_handle:
+            html_handle.write(html_message)
+        try:
+            dfu_output = dfuClient.file_to_shock({'file_path': html_file_path,
+                                                  'pack': 'zip',
+                                                  'make_handle': 0})
+            output_html.append({'shock_id': dfu_output['shock_id'],
+                                'name': 'kb_meta_decoder_report_index.html',
+                                'label': 'Report index'})
+        except:
+            raise ValueError('Logging exception loading html_report to shock')
+
+
+        # load in all the output
+        output_files = []
         for suffix, description in suffixes.items():
             data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf"+suffix)
             if os.path.isfile(data_file_path):
@@ -577,6 +593,7 @@ class kb_meta_decoder:
             if os.path.isfile(html_file_path):
                 try:
                     dfu_output = dfuClient.file_to_shock({'file_path': html_file_path,
+                                                          'pack': 'zip',
                                                           'make_handle': 0})
 
                     output_html.append({'shock_id': dfu_output['shock_id'],
@@ -584,7 +601,6 @@ class kb_meta_decoder:
                                         'label': suffix+' file'})
                 except:
                     print("failed to load "+html_file_path+"\n")
-            i+=1
 
         # build report
         reportName = 'kb_calc_pop_stats_report_'+str(uuid.uuid4())
