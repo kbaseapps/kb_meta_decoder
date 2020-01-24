@@ -6,6 +6,7 @@ import os
 import uuid
 import subprocess
 from pprint import pprint, pformat
+from datetime import datetime
 
 from installed_clients.AssemblyUtilClient import AssemblyUtil as AUClient
 from installed_clients.DataFileUtilClient import DataFileUtil as DFUClient
@@ -221,10 +222,16 @@ class kb_meta_decoder:
         return
 
     # set up paths for meta_decoder
-    def setup_paths(self, console):
+    def setup_paths(self, console, reads_file_path, contigs_file_path):
+        self.log(console,"Setting up meta_decoder paths.\n");
+
+        timestamp = int((datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds() * 1000)
+        output_dir = os.path.join(self.scratch, 'output_' + str(timestamp))
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
         try:
-            self.log(console,"Setting up meta_decoder paths.\n");
-            cmdstring = "cd /meta_decoder && git pull && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s /kb/module/work/tmp/*.fastq . && ln -s /kb/module/work/tmp/*.fa . && cd .. && mkdir output_dir"
+            cmdstring = "cd /meta_decoder && git pull && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s "+reads_file_path+" . && ln -s "+contigs_file_path+" . && cd .. && ln -s "+output_dir+" output_dir"
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -237,7 +244,7 @@ class kb_meta_decoder:
         except Exception as e:
             raise ValueError('Unable to set up paths\n' + str(e))
 
-        return
+        return output_dir
 
     # run meta_decoder
     def run_meta_decoder(self, console):
@@ -263,7 +270,7 @@ class kb_meta_decoder:
     def make_html(self, console):
         try:
             self.log(console,"Making HTML.\n");
-            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T && ls -altr /meta_decoder/output_dir"
+            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T && ls -altr output_dir/"
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
@@ -291,6 +298,9 @@ class kb_meta_decoder:
         self.shared_folder = config['scratch']
         logging.basicConfig(format='%(created)s %(levelname)s: %(message)s',
                             level=logging.INFO)
+
+        if not os.path.exists(self.scratch):
+            os.makedirs(self.scratch)
         #END_CONSTRUCTOR
         pass
 
@@ -519,7 +529,7 @@ class kb_meta_decoder:
         reads_file_path = self.download_reads(token, params['reads_ref'])
 
         # set up meta_decoder paths
-        self.setup_paths(console)
+        output_dir = self.setup_paths(console, reads_file_path, contigs_file_path)
 
         # run meta_decoder
         self.run_meta_decoder(console)
@@ -527,7 +537,6 @@ class kb_meta_decoder:
         # make HTML
         self.make_html(console)
 
-        html_output = "<p><b>MetaDecoder output</b>:<ul>"
         suffixes = {".sites.pi": "Nucleotide_diversity per site",
                     ".windowed.pi": "Nucleotide_diversity per 1000bp",
                     ".frq": "Allele frequency for each site",
@@ -542,13 +551,6 @@ class kb_meta_decoder:
                     ".snpden": "Number and density of SNPs in bins of size of 1000bp",
                     ".indel.hist": "Histogram file of the length of all indels (including SNPs)"}
 
-        # build index of files / help
-        i = 0
-        for suffix, description in suffixes.items():
-            html_output+='<li><a href="#out'+str(i)+'">'+suffix+' file</a>: '+description+"\n"
-            i+=1
-        html_output+="</ul>\n<p><b>Results:</b><p>\n"
-
         # need another dfu client
         try:
             dfuClient = DFUClient(self.callback_url, token=token, service_ver=self.SERVICE_VER)
@@ -558,8 +560,9 @@ class kb_meta_decoder:
         # load in all the output
         i = 0
         output_files = []
+        output_html = []
         for suffix, description in suffixes.items():
-            data_file_path = "/meta_decoder/output_dir/"+os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf"+suffix
+            data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf"+suffix)
             if os.path.isfile(data_file_path):
                 print("LOADING "+data_file_path+"\n")
                 try:
@@ -570,14 +573,15 @@ class kb_meta_decoder:
                                          'label': suffix+' file'})
                 except:
                     print("failed to load "+data_file_path+"\n")
-                    # f6038840-e2a6-4262-af73-855eaccd9d1f.inter.fastq_KBase_derived_FW602_bin_15_finished_annot.fa_assembly.fa.flt.vcf.sites.pi
-                    # f6038840-e2a6-4262-af73-855eaccd9d1f.inter.fastq_KBase_derived_FW602_bin_15_finished_annot.fa_assembly.fa.flt.vcf.sites.pi
             html_file_path = data_file_path+".html"
             if os.path.isfile(html_file_path):
-                html_output+='<a name="out'+str(i)+'"></a><b>'+suffix+' file</b>: '+description+"<p>\n"
                 try:
-                    with open(html_file_path, "r") as html_file:
-                        html_output+="\n".join(html_file.readlines())+"<p>\n"
+                    dfu_output = dfuClient.file_to_shock({'file_path': html_file_path,
+                                                          'make_handle': 0})
+
+                    output_html.append({'shock_id': dfu_output['shock_id'],
+                                        'name': 'meta_decoder_output'+suffix+".html",
+                                        'label': suffix+' file'})
                 except:
                     print("failed to load "+html_file_path+"\n")
             i+=1
@@ -586,10 +590,10 @@ class kb_meta_decoder:
         reportName = 'kb_calc_pop_stats_report_'+str(uuid.uuid4())
 
         reportObj = {'objects_created': [],
-                     'direct_html': html_output,
-                     'direct_html_link_index': None,
+                     'direct_html': None,
+                     'direct_html_link_index': 0,
                      'file_links': output_files,
-                     'html_links': [],
+                     'html_links': output_html,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
