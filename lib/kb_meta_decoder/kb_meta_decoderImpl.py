@@ -568,6 +568,7 @@ class kb_meta_decoder:
             dfu_output = dfuClient.file_to_shock({'file_path': html_file_path,
                                                   'pack': 'zip',
                                                   'make_handle': 0})
+            zip_shock_id = dfu_output['shock_id']
             output_html.append({'shock_id': dfu_output['shock_id'],
                                 'name': 'kb_meta_decoder_report_index.html',
                                 'label': 'Report index'})
@@ -592,12 +593,12 @@ class kb_meta_decoder:
             html_file_path = data_file_path+".html"
             if os.path.isfile(html_file_path):
                 try:
-                    dfu_output = dfuClient.file_to_shock({'file_path': html_file_path,
-                                                          'pack': 'zip',
-                                                          'make_handle': 0})
+                    # dfu_output = dfuClient.file_to_shock({'file_path': html_file_path,
+                    #                                      'pack': 'zip',
+                    #                                      'make_handle': 0})
 
-                    output_html.append({'shock_id': dfu_output['shock_id'],
-                                        'name': 'meta_decoder_output'+suffix+".html",
+                    output_html.append({'shock_id': zip_shock_id,
+                                        'name': os.path.basename(html_file_path),
                                         'label': suffix+' file'})
                 except:
                     print("failed to load "+html_file_path+"\n")
