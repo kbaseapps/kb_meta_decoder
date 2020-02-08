@@ -555,6 +555,13 @@ class kb_meta_decoder:
         except Exception as e:
             raise ValueError('Unable to instantiate dfuClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
 
+        # remove BAM files, or output zip gets too big:
+        os.remove(os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".bam"))
+        os.remove(os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".sorted.bam"))
+        os.remove(os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".sorted.bam.bai"))
+        os.remove(os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".raw.vcf"))
+        os.remove(os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf"))
+
         # make index/explanation of HTML output files
         # and load output
         output_html = []
@@ -571,6 +578,7 @@ class kb_meta_decoder:
                 try:
                     dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
                                                           'make_handle': 0})
+                    os.remove(data_file_path)
                     output_files.append({'shock_id': dfu_output['shock_id'],
                                          'name': 'meta_decoder_output'+suffix,
                                          'label': suffix+' file'})
