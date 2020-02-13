@@ -362,8 +362,9 @@ class kb_meta_decoder:
         dfu_output = dfuClient.file_to_shock({'file_path': bam_file_path,
                                               'make_handle': 0})
         output_files.append({'shock_id': dfu_output['shock_id'],
-                             'label': os.path.basename(bam_file_path),
-                             'name': 'BAM file'})
+                             'name': os.path.basename(bam_file_path),
+                             'label': 'BAM file',
+                             'description': 'BAM file'})
 
         # get bam stats
         self.get_bam_stats(console,bam_file_path)
@@ -469,13 +470,15 @@ class kb_meta_decoder:
         dfu_output = dfuClient.file_to_shock({'file_path': sorted_bam_file_path,
                                               'make_handle': 0})
         output_files.append({'shock_id': dfu_output['shock_id'],
-                             'label': os.path.basename(sorted_bam_file_path),
-                             'name': 'BAM file (sorted)'})
+                             'name': os.path.basename(sorted_bam_file_path),
+                             'label': 'BAM file (sorted)',
+                             'description': 'BAM file (sorted)'})
         dfu_output = dfuClient.file_to_shock({'file_path': vcf_file_path,
                                               'make_handle': 0})
         output_files.append({'shock_id': dfu_output['shock_id'],
-                             'label': os.path.basename(vcf_file_path),
-                             'name': 'VCF file'})
+                             'name': os.path.basename(vcf_file_path),
+                             'label': 'VCF file',
+                             'description': 'VCF file'})
 
         # get vcf stats
         self.get_vcf_stats(console,vcf_file_path)
@@ -593,8 +596,9 @@ class kb_meta_decoder:
                                               'make_handle': 0})
         os.remove(data_file_path)
         output_files.append({'shock_id': dfu_output['shock_id'],
-                             'label': os.path.basename(data_file_path),
-                             'name': 'BAM file (sorted)'})
+                             'name': os.path.basename(data_file_path),
+                             'label': 'BAM file (sorted)',
+                             'description': 'BAM file (sorted)'})
 
         data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".sorted.bam.bai")
         os.remove(data_file_path)
@@ -603,16 +607,18 @@ class kb_meta_decoder:
                                               'make_handle': 0})
         os.remove(data_file_path)
         output_files.append({'shock_id': dfu_output['shock_id'],
-                             'label': os.path.basename(data_file_path),
-                             'name': 'VCF file (raw)'})
+                             'name': os.path.basename(data_file_path),
+                             'label': 'VCF file (raw)',
+                             'description': 'VCF file (raw)'})
 
         data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf")
         dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
                                               'make_handle': 0})
         os.remove(data_file_path)
         output_files.append({'shock_id': dfu_output['shock_id'],
-                             'label': os.path.basename(data_file_path),
-                             'name': 'VCF file (filtered)'})
+                             'name': os.path.basename(data_file_path),
+                             'label': 'VCF file (filtered)',
+                             'description': 'VCF file (filtered)'})
 
         # make index/explanation of HTML output files
         # and load output
