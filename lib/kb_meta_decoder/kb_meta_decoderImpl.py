@@ -231,7 +231,7 @@ class kb_meta_decoder:
             os.makedirs(output_dir)
 
         try:
-            cmdstring = "cd /meta_decoder && git pull && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s "+reads_file_path+" . && ln -s "+contigs_file_path+" . && cd .. && ln -s "+output_dir+" output_dir"
+            cmdstring = "cd /meta_decoder && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s "+reads_file_path+" . && ln -s "+contigs_file_path+" . && cd .. && ln -s "+output_dir+" output_dir"
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())

@@ -22,12 +22,16 @@ RUN pip3 install openopt
 RUN pip3 install vcfstats
 RUN git clone https://github.com/lh3/bwa.git && cd bwa && make && cp bwa /usr/local/bin/
 RUN git clone -b py3 https://github.com/caozhichongchong/meta_decoder.git
+RUN cd meta_decoder && git checkout 02e38849ed5464799a133dd561258b2248126bc2 && cd ..
 
 # -----------------------------------------
 
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
 RUN chmod -R a+rw /kb/module
+
+WORKDIR /usr/local/lib
+RUN wget https://github.com/biopet/bamstats/releases/download/v1.0.1/BamStats-assembly-1.0.1.jar
 
 WORKDIR /kb/module
 
