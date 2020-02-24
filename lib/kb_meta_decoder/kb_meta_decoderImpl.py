@@ -623,7 +623,7 @@ class kb_meta_decoder:
         # make index/explanation of HTML output files
         # and load output
         output_html = []
-        html_message = "<p><b>MetaDecoder output</b>:<ul>"
+        html_message = "<p><b>MetaDecoder output</b>:<p>Meta_decoder maps a metagenome to reference genomes and infer the intraspecies strain-level diversity in a sample. It finds maximum likelihood estimates for the strain genotypes and the strain abundances. Based on the strain genotypes and abundances, it estimates can compares the strain-level diversity across metagenome samples by calculating the nucleotide diversity, allele frequency, Transition / Transversion ratio, SNP density, and other statistic measurements.<p><ul>"
         for suffix, description in suffixes.items():
             data_file_base = os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf"+suffix
             data_file_path = os.path.join(output_dir,data_file_base)
