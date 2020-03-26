@@ -250,7 +250,7 @@ class kb_meta_decoder:
     def run_meta_decoder(self, console):
         try:
             self.log(console,"Running meta_decoder.\n");
-            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py -i input_dir -inf .fastq --r input_dir --rf .fa --s 1 --o output_dir --t 1 --bwa /bwa/bwa && sh 0.sh"
+            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py -i input_dir -inf .fastq --r input_dir --rf .fa --s 1 --o output_dir --t 1 --bwa /bwa/bwa && /bin/sh sub_metadecoder/0.sh"
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
@@ -270,7 +270,7 @@ class kb_meta_decoder:
     def make_html(self, console):
         try:
             self.log(console,"Making HTML.\n");
-            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T"
+            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T && sh meta.decoder.visual.sh"
 
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
@@ -590,35 +590,50 @@ class kb_meta_decoder:
         output_files = []
 
         data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".bam")
-        os.remove(data_file_path)
+        if os.path.isfile(data_file_path):
+            os.remove(data_file_path)
+        else:
+            print('missing expected file '+data_file_path+'\n')
         data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".sorted.bam")
-        dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
-                                              'make_handle': 0})
-        os.remove(data_file_path)
-        output_files.append({'shock_id': dfu_output['shock_id'],
-                             'name': os.path.basename(data_file_path),
-                             'label': 'BAM file (sorted)',
-                             'description': 'BAM file (sorted)'})
+        if os.path.isfile(data_file_path):
+            dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
+                                                  'make_handle': 0})
+            os.remove(data_file_path)
+            output_files.append({'shock_id': dfu_output['shock_id'],
+                                 'name': os.path.basename(data_file_path),
+                                 'label': 'BAM file (sorted)',
+                                 'description': 'BAM file (sorted)'})
+        else:
+            print('missing expected file '+data_file_path+'\n')
 
         data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".sorted.bam.bai")
-        os.remove(data_file_path)
+        if os.path.isfile(data_file_path):
+            os.remove(data_file_path)
+        else:
+            print('missing expected file '+data_file_path+'\n')
         data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".raw.vcf")
-        dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
+        if os.path.isfile(data_file_path):
+            dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
                                               'make_handle': 0})
-        os.remove(data_file_path)
-        output_files.append({'shock_id': dfu_output['shock_id'],
-                             'name': os.path.basename(data_file_path),
-                             'label': 'VCF file (raw)',
-                             'description': 'VCF file (raw)'})
+            os.remove(data_file_path)
+            output_files.append({'shock_id': dfu_output['shock_id'],
+                                 'name': os.path.basename(data_file_path),
+                                 'label': 'VCF file (raw)',
+                                 'description': 'VCF file (raw)'})
+        else:
+            print('missing expected file '+data_file_path+'\n')
 
         data_file_path = os.path.join(output_dir,os.path.basename(reads_file_path)+"_"+os.path.basename(contigs_file_path)+".flt.vcf")
-        dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
-                                              'make_handle': 0})
-        os.remove(data_file_path)
-        output_files.append({'shock_id': dfu_output['shock_id'],
-                             'name': os.path.basename(data_file_path),
-                             'label': 'VCF file (filtered)',
-                             'description': 'VCF file (filtered)'})
+        if os.path.isfile(data_file_path):
+            dfu_output = dfuClient.file_to_shock({'file_path': data_file_path,
+                                                  'make_handle': 0})
+            os.remove(data_file_path)
+            output_files.append({'shock_id': dfu_output['shock_id'],
+                                 'name': os.path.basename(data_file_path),
+                                 'label': 'VCF file (filtered)',
+                                 'description': 'VCF file (filtered)'})
+        else:
+            print('missing expected file '+data_file_path+'\n')
 
         # make index/explanation of HTML output files
         # and load output
