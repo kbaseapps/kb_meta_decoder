@@ -20,9 +20,11 @@ RUN pip3 install FuncDesigner
 RUN pip3 install DerApproximator
 RUN pip3 install openopt
 RUN pip3 install vcfstats
+# still need some python2 code for strainfinder v1
+RUN pip install DerApproximator
 RUN git clone https://github.com/lh3/bwa.git && cd bwa && make && cp bwa /usr/local/bin/
-RUN git clone -b py3 https://github.com/caozhichongchong/meta_decoder.git
-RUN cd meta_decoder && git checkout 02e38849ed5464799a133dd561258b2248126bc2 && cd ..
+RUN git clone -b py3 https://github.com/caozhichongchong/meta_decoder.git && cd meta_decoder && git clone https://bitbucket.org/yonatanf/strainfinder && cp strainfinder/*.py . && mv bin/StrainFinder.py ./strainFinder.py && mv strainfinder/presence_matrices .
+# RUN cd meta_decoder && git checkout 02e38849ed5464799a133dd561258b2248126bc2 && cd ..
 
 # -----------------------------------------
 

@@ -36,6 +36,12 @@ parameters :
         short-hint : |
             These reads will be mapped and then used to call variants.
 
+    output_vcf :
+        ui-name : |
+            Output variation object
+        short-hint : |
+            Name for the output variation object
+
 description : |
     <p>This method uses BCFtools to call variants in a reference assembly.  It will first map short reads to this assembly.
 

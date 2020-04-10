@@ -69,7 +69,9 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_id = "35222"
         test_assembly = "35222/2/1"
         test_reads = "35222/3/1"
-        ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
-                                                                          'workspace_id': test_ws_id,
-                                                                          'assembly_ref' : test_assembly,
-                                                                          'reads_ref' : test_reads})
+        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
+        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
+                                                        'workspace_id': test_ws_id,
+                                                        'assembly_ref' : test_assembly,
+                                                        'reads_ref' : test_reads,
+                                                        'output_vcf' : 'test_vcf'})

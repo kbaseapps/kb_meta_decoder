@@ -10,8 +10,9 @@ from datetime import datetime
 
 from installed_clients.AssemblyUtilClient import AssemblyUtil as AUClient
 from installed_clients.DataFileUtilClient import DataFileUtil as DFUClient
-from installed_clients.ReadsUtilsClient import ReadsUtils
-from installed_clients.KBaseReportClient import KBaseReport
+from installed_clients.KBaseReportClient import KBaseReport as ReportClient
+from installed_clients.ReadsUtilsClient import ReadsUtils as RUClient
+from installed_clients.VariationUtilClient import VariationUtil as VUClient
 #END_HEADER
 
 
@@ -32,7 +33,7 @@ class kb_meta_decoder:
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "git@github.com:kbaseapps/kb_meta_decoder.git"
-    GIT_COMMIT_HASH = "b5ac2935324fdbde2415cc82099f915df158be24"
+    GIT_COMMIT_HASH = "737b2582d0a52ae43f9374bb794e1bd0f65ae77a"
 
     #BEGIN_CLASS_HEADER
     SERVICE_VER = 'release'
@@ -62,10 +63,9 @@ class kb_meta_decoder:
     # get the reads as FASTQ
     def download_reads(self, token, reads_ref):
         try:
-            readsUtils_Client = ReadsUtils (url=self.callback_url, token=token)  # SDK local                   
-
-            readsLibrary = readsUtils_Client.download_reads ({'read_libraries': [reads_ref],
-                                                                 'interleaved': 'true'                                                              
+            ruClient = RUClient(url=self.callback_url, token=token)
+            readsLibrary = ruClient.download_reads ({'read_libraries': [reads_ref],
+                                                     'interleaved': 'true'
             })
             reads_file_path = readsLibrary['files'][reads_ref]['files']['fwd']
         except Exception as e:
@@ -384,8 +384,8 @@ class kb_meta_decoder:
 
         # save report object
         try:
-            report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
-            report_info = report.create_extended_report(reportObj)
+            reportClient = ReportClient(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+            report_info = reportClient.create_extended_report(reportObj)
         except:
             raise ValueError ("no report generated")
 
@@ -402,11 +402,11 @@ class kb_meta_decoder:
 
     def call_variants(self, ctx, params):
         """
-        Call variants in a reference assembly.  Should be based on mapped reads (BAM file), and save VCF-like object.
+        Call variants in a reference assembly.  Should be based on mapped reads (BAM file).
         :param params: instance of type "CallVariantsParams" -> structure:
            parameter "workspace_name" of String, parameter "workspace_id" of
            String, parameter "assembly_ref" of String, parameter "reads_ref"
-           of String
+           of String, parameter "output_vcf" of String
         :returns: instance of type "ReportResults" -> structure: parameter
            "report_name" of String, parameter "report_ref" of String
         """
@@ -425,7 +425,8 @@ class kb_meta_decoder:
         required_params = ['workspace_name',
                            'workspace_id',
                            'assembly_ref',
-                           'reads_ref'
+                           'reads_ref',
+                           'output_vcf'
                           ]
         for required_param in required_params:
             if required_param not in params or params[required_param] == None:
@@ -461,6 +462,15 @@ class kb_meta_decoder:
         vcf_file_path = self.call_variants_bcftools(console, contigs_file_path, sorted_bam_file_path)
         print("got vcf output "+vcf_file_path)
 
+        # save VCF file
+        vuClient = VUClient(self.callback_url)
+        vcf_object = vuClient.save_variation_from_vcf({
+            'workspace_name': params['workspace_name'],
+            'genome_or_assembly_ref': params['assembly_ref'],
+            'vcf_staging_file_path': vcf_file_path,
+            'variation_object_name': params['output_vcf']
+        })
+
         # save bam and vcf files for report
         output_files = []
         try:
@@ -486,7 +496,7 @@ class kb_meta_decoder:
         # build report
         reportName = 'kb_call_variants_report_'+str(uuid.uuid4())
 
-        reportObj = {'objects_created': [],
+        reportObj = {'objects_created': [vcf_object],
                      'message': "\n".join(console),
                      'direct_html': None,
                      'direct_html_link_index': None,
@@ -498,8 +508,8 @@ class kb_meta_decoder:
 
         # save report object
         try:
-            report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
-            report_info = report.create_extended_report(reportObj)
+            reportClient = ReportClient(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+            report_info = reportClient.create_extended_report(reportObj)
         except:
             raise ValueError ("no report generated")
 
@@ -698,8 +708,8 @@ class kb_meta_decoder:
 
         # save report object
         try:
-            report = KBaseReport(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
-            report_info = report.create_extended_report(reportObj)
+            reportClient = ReportClient(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+            report_info = reportClient.create_extended_report(reportObj)
         except:
             raise ValueError ("no report generated")
 
