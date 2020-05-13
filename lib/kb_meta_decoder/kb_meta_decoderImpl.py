@@ -463,13 +463,22 @@ class kb_meta_decoder:
         print("got vcf output "+vcf_file_path)
 
         # save VCF file
-        vuClient = VUClient(self.callback_url)
-        vcf_object = vuClient.save_variation_from_vcf({
-            'workspace_name': params['workspace_name'],
-            'genome_or_assembly_ref': params['assembly_ref'],
-            'vcf_staging_file_path': vcf_file_path,
-            'variation_object_name': params['output_vcf']
-        })
+        try:
+            vuClient = VUClient(self.callback_url)
+            vcf_object = vuClient.save_variation_from_vcf({
+                'workspace_name': params['workspace_name'],
+                'genome_or_assembly_ref': params['assembly_ref'],
+                'vcf_staging_file_path': vcf_file_path,
+                'variation_object_name': params['output_vcf']
+            })
+        except Exception as e:
+            print("vuclient didn't work.")
+            cmdstring = "cat /kb/module/work/tmp/*vcf.errors_summary*"
+            cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            for line in cmdProcess.stdout:
+                print(line.decode("utf-8").rstrip())
+            cmdProcess.wait()
+            raise
 
         # save bam and vcf files for report
         output_files = []
