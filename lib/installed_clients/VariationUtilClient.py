@@ -62,7 +62,8 @@ class VariationUtil(object):
            "variation_object_name" of String, parameter
            "sample_attribute_ref" of type "obj_ref" (An X/Y/Z style reference)
         :returns: instance of type "save_variation_output" -> structure:
-           parameter "report_name" of String, parameter "report_ref" of String
+           parameter "variation_ref" of String, parameter "report_name" of
+           String, parameter "report_ref" of String
         """
         return self._client.run_job('VariationUtil.save_variation_from_vcf',
                                     [params], self._service_ver, context)

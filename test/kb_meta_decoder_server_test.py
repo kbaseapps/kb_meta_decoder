@@ -53,7 +53,7 @@ class kb_meta_decoderTest(unittest.TestCase):
             print('Test workspace was deleted')
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    @unittest.skip("vcf upload not currently working")
+    # @unittest.skip("vcf upload not currently working")
     def test_call_variants(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -77,6 +77,7 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'reads_ref' : test_reads,
                                                         'output_vcf' : 'test_vcf'})
 
+    @unittest.skip("current focus on calling variants")
     def test_calc_pop_stat(self):
         # these test objects are in appdev:
         test_ws_name = "jmc:narrative_1576867921697"

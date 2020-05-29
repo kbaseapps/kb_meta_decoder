@@ -78,8 +78,8 @@ class kb_meta_decoder:
         try:
             # first index the contigs
             self.log(console,"Indexing contigs.\n");
-            cmdstring = "/bwa/bwa index "+input_contigs
-
+            cmdstring = "/usr/local/bin/bwa index "+input_contigs
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -94,7 +94,8 @@ class kb_meta_decoder:
 
             # then map the reads
             self.log(console,"Mapping reads to contigs.\n");
-            cmdstring = "/bwa/bwa mem "+input_contigs+" "+input_reads+"|samtools view -S -b >"+bam_file_path
+            cmdstring = "/usr/local/bin/bwa mem "+input_contigs+" "+input_reads+"|samtools view -S -b >"+bam_file_path
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -119,6 +120,7 @@ class kb_meta_decoder:
             # then map the reads
             self.log(console,"Getting bam stats.\n");
             cmdstring = "samtools flagstat "+bam_file_path
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 self.log(console,line.decode("utf-8").rstrip())
@@ -142,7 +144,7 @@ class kb_meta_decoder:
             # run sort
             self.log(console,"Sorting mapped reads.\n");
             cmdstring = "samtools sort "+bam_file_path+" -o "+sorted_bam_file_path
-
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -163,7 +165,7 @@ class kb_meta_decoder:
             # run index
             self.log(console,"Indexing mapped reads.\n");
             cmdstring = "samtools index "+bam_file_path
-
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -187,7 +189,7 @@ class kb_meta_decoder:
             # run mpileup
             self.log(console,"Calling variants.\n");
             cmdstring = "bcftools mpileup -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call -mv > "+vcf_file_path
-
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -207,6 +209,7 @@ class kb_meta_decoder:
         try:
             self.log(console,"Getting vcf stats.\n");
             cmdstring = "bcftools stats "+vcf_file_path
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 self.log(console,line.decode("utf-8").rstrip())
@@ -232,6 +235,7 @@ class kb_meta_decoder:
 
         try:
             cmdstring = "cd /meta_decoder && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s "+reads_file_path+" . && ln -s "+contigs_file_path+" . && cd .. && ln -s "+output_dir+" output_dir"
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -250,8 +254,8 @@ class kb_meta_decoder:
     def run_meta_decoder(self, console):
         try:
             self.log(console,"Running meta_decoder.\n");
-            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py -i input_dir -inf .fastq --r input_dir --rf .fa --s 1 --o output_dir --t 1 --bwa /bwa/bwa && /bin/sh sub_metadecoder/0.sh"
-
+            cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py -i input_dir -inf .fastq --r input_dir --rf .fa --s 1 --o output_dir --t 1 --bwa /usr/local/bin/bwa && /bin/sh sub_metadecoder/0.sh"
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -271,7 +275,7 @@ class kb_meta_decoder:
         try:
             self.log(console,"Making HTML.\n");
             cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T && sh meta.decoder.visual.sh"
-
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -464,16 +468,20 @@ class kb_meta_decoder:
 
         # save VCF file
         try:
+            print("using VUClient to save VCF")
             vuClient = VUClient(self.callback_url)
-            vcf_object = vuClient.save_variation_from_vcf({
+            vcf_result = vuClient.save_variation_from_vcf({
                 'workspace_name': params['workspace_name'],
                 'genome_or_assembly_ref': params['assembly_ref'],
                 'vcf_staging_file_path': vcf_file_path,
                 'variation_object_name': params['output_vcf']
             })
+            vcf_object = vcf_result['variation_ref']
+            print("SUCCESS using VUClient to save VCF")
         except Exception as e:
             print("vuclient didn't work.")
             cmdstring = "cat /kb/module/work/tmp/*vcf.errors_summary*"
+            self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -505,7 +513,9 @@ class kb_meta_decoder:
         # build report
         reportName = 'kb_call_variants_report_'+str(uuid.uuid4())
 
-        reportObj = {'objects_created': [vcf_object],
+        # don't claim the VCF object, or it will overwrite
+        # Ranjan's linked report.
+        reportObj = {'objects_created': [], # {'ref':vcf_object}],
                      'message': "\n".join(console),
                      'direct_html': None,
                      'direct_html_link_index': None,
