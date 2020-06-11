@@ -188,7 +188,7 @@ class kb_meta_decoder:
 
             # run mpileup
             self.log(console,"Calling variants.\n");
-            cmdstring = "bcftools mpileup -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call -mv --ploidy 1 > "+vcf_file_path
+            cmdstring = "bcftools mpileup -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call -mv > "+vcf_file_path
             self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
