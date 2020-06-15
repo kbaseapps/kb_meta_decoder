@@ -33,7 +33,7 @@ class kb_meta_decoder:
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "git@github.com:kbaseapps/kb_meta_decoder.git"
-    GIT_COMMIT_HASH = "737b2582d0a52ae43f9374bb794e1bd0f65ae77a"
+    GIT_COMMIT_HASH = "2ce3e97483169a6528536bad50068cce5fce1182"
 
     #BEGIN_CLASS_HEADER
     SERVICE_VER = 'release'
@@ -181,14 +181,28 @@ class kb_meta_decoder:
         return
 
     # call variants
-    def call_variants_bcftools(self, console, contigs_file_path, sorted_bam_file_path):
+    def call_variants_bcftools(self, console, contigs_file_path, sorted_bam_file_path, min_mapping_quality, min_depth):
         try:
-            # store output
-            vcf_file_path = os.path.join(self.scratch,"vcf_"+str(uuid.uuid4())+".vcf")
+            # store raw and filtered output
+            raw_vcf_file_path = os.path.join(self.scratch,"vcf_"+str(uuid.uuid4())+".raw.vcf")
+            vcf_file_path = os.path.join(self.scratch,"vcf_"+str(uuid.uuid4())+".flt.vcf")
 
             # run mpileup
             self.log(console,"Calling variants.\n");
-            cmdstring = "bcftools mpileup -a FMT/AD -B -d3000 -q30 -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call --ploidy 1 -m -A > "+vcf_file_path
+            cmdstring = "bcftools mpileup -a FMT/AD -B -d3000 -q"+min_mapping_quality+" -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call --ploidy 1 -m -A > "+raw_vcf_file_path
+            self.log(console,"command: "+cmdstring);
+            cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            for line in cmdProcess.stdout:
+                print(line.decode("utf-8").rstrip())
+            cmdProcess.wait()
+            print('return code: ' + str(cmdProcess.returncode)+ '\n')
+            if cmdProcess.returncode != 0:
+                raise ValueError('Error running bcftools, return code: ' +
+                                 str(cmdProcess.returncode) + '\n')
+
+            # filter and call variants
+            self.log(console,"Filtering variants.\n");
+            cmdstring = "bcftools filter -s LowQual -e 'DP>"+min_depth+"' "+raw_vcf_file_path+" | bcftools view -v snps > "+vcf_file_path
             self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
@@ -410,7 +424,8 @@ class kb_meta_decoder:
         :param params: instance of type "CallVariantsParams" -> structure:
            parameter "workspace_name" of String, parameter "workspace_id" of
            String, parameter "assembly_ref" of String, parameter "reads_ref"
-           of String, parameter "output_vcf" of String
+           of String, parameter "output_vcf" of String, parameter
+           "min_mapping_quality" of Long, parameter "min_depth" of Long
         :returns: instance of type "ReportResults" -> structure: parameter
            "report_name" of String, parameter "report_ref" of String
         """
@@ -430,7 +445,9 @@ class kb_meta_decoder:
                            'workspace_id',
                            'assembly_ref',
                            'reads_ref',
-                           'output_vcf'
+                           'output_vcf',
+                           'min_mapping_quality',
+                           'min_depth'
                           ]
         for required_param in required_params:
             if required_param not in params or params[required_param] == None:
@@ -463,7 +480,7 @@ class kb_meta_decoder:
         print("indexed bam")
 
         # call variants using bcftools
-        vcf_file_path = self.call_variants_bcftools(console, contigs_file_path, sorted_bam_file_path)
+        vcf_file_path = self.call_variants_bcftools(console, contigs_file_path, sorted_bam_file_path, params['min_mapping_quality'], params['min_depth'])
         print("got vcf output "+vcf_file_path)
 
         # save VCF file

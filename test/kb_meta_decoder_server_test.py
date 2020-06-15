@@ -75,6 +75,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'workspace_id': test_ws_id,
                                                         'assembly_ref' : test_assembly,
                                                         'reads_ref' : test_reads,
+                                                        'min_mapping_quality' : '30',
+                                                        'min_depth' : '50',
                                                         'output_vcf' : 'test_vcf'})
 
     @unittest.skip("current focus on calling variants")

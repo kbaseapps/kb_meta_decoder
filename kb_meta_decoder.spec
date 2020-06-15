@@ -21,6 +21,8 @@ module kb_meta_decoder {
         string assembly_ref;
         string reads_ref;  /* should be: string mapped_reads_ref; */
 	string output_vcf;
+	int min_mapping_quality;
+	int min_depth;
     } CallVariantsParams;
 
     typedef structure {

@@ -42,6 +42,18 @@ parameters :
         short-hint : |
             Name for the output variation object
 
+    min_mapping_quality :
+        ui-name : |
+            Minimum mapping quality
+        short-hint : |
+            Minimum mapping quality for an alignment to be used in mpileup (-q option)
+
+    min_depth :
+        ui-name : |
+            Minimum depth
+        short-hint : |
+            Minimum coverage depth for calling variants
+
 description : |
     <p>This method uses BCFtools to call variants in a reference assembly.  It will first map short reads to this assembly.
 

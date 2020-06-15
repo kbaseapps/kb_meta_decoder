@@ -33,6 +33,28 @@
             }
         },
         {
+            "id": "min_mapping_quality",
+            "optional": false,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "30" ],
+            "field_type": "text",
+            "text_options": {
+                "validate_as": "int"
+	    }
+        },
+        {
+            "id": "min_depth",
+            "optional": false,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "50" ],
+            "field_type": "text",
+            "text_options": {
+                "validate_as": "int"
+	    }
+        },
+        {
             "id": "output_vcf",
             "optional": false,
             "advanced": false,
@@ -65,6 +87,12 @@
                     "input_parameter": "reads_ref",
                     "target_property": "reads_ref",
                     "target_type_transform": "resolved-ref"
+                },{
+                    "input_parameter": "min_mapping_quality",
+                    "target_property": "min_mapping_quality"
+                },{
+                    "input_parameter": "min_depth",
+                    "target_property": "min_depth"
                 },{
                     "input_parameter": "output_vcf",
                     "target_property": "output_vcf"
