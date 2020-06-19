@@ -189,7 +189,7 @@ class kb_meta_decoder:
 
             # run mpileup
             self.log(console,"Calling variants.\n");
-            cmdstring = "bcftools mpileup -a FMT/AD -B -d3000 -q"+min_mapping_quality+" -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call --ploidy 1 -m -A > "+raw_vcf_file_path
+            cmdstring = "bcftools mpileup -a FMT/AD -B -d3000 -q"+str(min_mapping_quality)+" -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call --ploidy 1 -m -A > "+raw_vcf_file_path
             self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
@@ -202,7 +202,7 @@ class kb_meta_decoder:
 
             # filter and call variants
             self.log(console,"Filtering variants.\n");
-            cmdstring = "bcftools filter -s LowQual -e 'DP>"+min_depth+"' "+raw_vcf_file_path+" | bcftools view -v snps > "+vcf_file_path
+            cmdstring = "bcftools filter -s LowQual -e 'DP>"+str(min_depth)+"' "+raw_vcf_file_path+" | bcftools view -v snps > "+vcf_file_path
             self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
