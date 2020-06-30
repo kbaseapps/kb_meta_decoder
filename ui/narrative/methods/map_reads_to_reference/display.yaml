@@ -39,7 +39,7 @@ parameters :
 description : |
     <p>This method uses Burrows-Wheeler Aligner (BWA) to index a reference assembly, then align a set of short reads to it using the BWA-MEM algorithm.  A Sequence/Alignment Map object should be created to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the mapping instead.  The output BAM file can be downloaded from the report.</p>
 
-    <p>The mapping is done using "bwa mem <contigs> <reads> | samtools view -S -b > <bam_file>"</p>
+    <p>The mapping is done using <code>bwa mem CONTIGS_FILE READS_FILE | samtools view -S -b > BAM_FILE</code></p>
 
     <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
 
