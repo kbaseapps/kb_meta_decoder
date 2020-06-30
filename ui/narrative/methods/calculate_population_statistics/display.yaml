@@ -37,9 +37,9 @@ parameters :
             These reads will be mapped and then used to call variants.
 
 description : |
-    <p>This method uses meta_decoder to calculate population statistics in a set of strains inferred from mapping reads to a reference genome.
+    <p>This method uses meta_decoder to calculate population statistics in a set of strains inferred from mapping reads to a reference genome.</p>
 
-    <p>Meta_decoder maps a metagenome to reference genomes and infer the intraspecies strain-level diversity in a sample. It finds maximum likelihood estimates for the strain genotypes and the strain abundances. Based on the strain genotypes and abundances, it estimates can compares the strain-level diversity across metagenome samples by calculating the nucleotide diversity, allele frequency, Transition / Transversion ratio, SNP density, and other statistic measurements.
+    <p>Meta_decoder maps a metagenome to reference genomes and infer the intraspecies strain-level diversity in a sample.  It finds maximum likelihood estimates for the strain genotypes and the strain abundances.  Based on the strain genotypes and abundances, it estimates can compares the strain-level diversity across metagenome samples by calculating the nucleotide diversity, allele frequency, Transition / Transversion ratio, SNP density, and other statistic measurements.</p>
 
     <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
 

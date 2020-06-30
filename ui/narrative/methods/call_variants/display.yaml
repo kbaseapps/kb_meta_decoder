@@ -38,9 +38,9 @@ parameters :
 
     output_vcf :
         ui-name : |
-            Output variation object
+            Output variants object
         short-hint : |
-            Name for the output variation object
+            Name for the output variants object
 
     min_mapping_quality :
         ui-name : |
@@ -55,7 +55,13 @@ parameters :
             Minimum coverage depth for calling variants
 
 description : |
-    <p>This method uses BCFtools to call variants in a reference assembly.  It will first map short reads to this assembly.
+    <p>This method uses BCFtools to call variants in a reference assembly.  It will first map short reads to this assembly using the "map reads" app.</p>
+
+    <p>The first step is to create a raw VCF file containing variants: "bcftools mpileup -a FMT/AD -B -d3000 -q<min_mapping_quality> -Ou -f <contigs> <bam_file> | bcftools call --ploidy 1 -m -A > <raw_vcf_file>"</p>
+
+    <p>This raw file is then filtered and variants are displayed using "bcftools filter -s LowQual -e 'DP><min_depth>' <raw_vcf_file> | bcftools view -v snps > <filtered_vcf_file>"</p>
+
+    <p>This method should create a Variants object to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the variants instead.  The BAM file and filtered VCF file can be downloaded from the report.</p>
 
     <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
 

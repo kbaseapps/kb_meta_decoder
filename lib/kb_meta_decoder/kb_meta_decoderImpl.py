@@ -485,16 +485,16 @@ class kb_meta_decoder:
 
         # save VCF file
         try:
-            print("using VUClient to save VCF")
-            vuClient = VUClient(self.callback_url)
-            vcf_result = vuClient.save_variation_from_vcf({
-                'workspace_name': params['workspace_name'],
-                'genome_or_assembly_ref': params['assembly_ref'],
-                'vcf_staging_file_path': vcf_file_path,
-                'variation_object_name': params['output_vcf']
-            })
-            vcf_object = vcf_result['variation_ref']
-            print("SUCCESS using VUClient to save VCF")
+            print("NOT using VUClient to save VCF - need object type release in KBase")
+            # vuClient = VUClient(self.callback_url)
+            # vcf_result = vuClient.save_variation_from_vcf({
+            #    'workspace_name': params['workspace_name'],
+            #    'genome_or_assembly_ref': params['assembly_ref'],
+            #    'vcf_staging_file_path': vcf_file_path,
+            #    'variation_object_name': params['output_vcf']
+            #})
+            #vcf_object = vcf_result['variation_ref']
+            #print("SUCCESS using VUClient to save VCF")
         except Exception as e:
             print("vuclient didn't work.")
             cmdstring = "cat /kb/module/work/tmp/*vcf.errors_summary*"
