@@ -5,15 +5,19 @@ import logging
 import os
 import uuid
 import subprocess
+import copy
+import re
 from pprint import pprint, pformat
 from datetime import datetime
 
+from installed_clients.WorkspaceClient import Workspace
 from installed_clients.AssemblyUtilClient import AssemblyUtil as AUClient
 from installed_clients.DataFileUtilClient import DataFileUtil as DFUClient
 from installed_clients.KBaseReportClient import KBaseReport as ReportClient
 from installed_clients.ReadsUtilsClient import ReadsUtils as RUClient
 from installed_clients.VariationUtilClient import VariationUtil as VUClient
 from installed_clients.KBParallelClient import KBParallel
+from installed_clients.SetAPIClient import SetAPI
 #END_HEADER
 
 
@@ -313,6 +317,7 @@ class kb_meta_decoder:
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
         self.scratch = os.path.abspath(config['scratch'])
+        self.workspace_url = config['workspace-url']
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.shared_folder = config['scratch']
         logging.basicConfig(format='%(created)s %(levelname)s: %(message)s',
@@ -458,20 +463,52 @@ class kb_meta_decoder:
         if 'provenance' in ctx:
             provenance = ctx['provenance']
         provenance[0]['input_ws_objects']=[str(params['assembly_ref'])]
-        provenance[0]['input_ws_objects'] += str(params['reads_ref']) for reads_ref in reads_refs
+        for reads_ref in params['reads_refs']:
+            provenance[0]['input_ws_objects'] += str(reads_ref)
 
         try:
             self.log(console,'instantiating KBParallel')
-            parallelClient = KBParallel(self.callbackURL)
+            parallelClient = KBParallel(self.callback_url)
         except:
             raise ValueError("unable to instantiate KBParallelClient")
+        try:
+            wsClient = Workspace(self.workspace_url, token=token)
+        except Exception as e:
+            raise ValueError("unable to instantiate wsClient. "+str(e))
+
+        # unpack sets, if any
+        all_reads_refs = []
+        # object info
+        [OBJID_I, NAME_I, TYPE_I, SAVE_DATE_I, VERSION_I, SAVED_BY_I, WSID_I, WORKSPACE_I, CHSUM_I, SIZE_I, META_I] = range(11)  # object_info tuple
+        for reads_ref in params['reads_refs']:
+            try:
+                reads_obj_info = wsClient.get_object_info_new({'objects':[{'ref':reads_ref}]})[0]
+                reads_obj_type = reads_obj_info[TYPE_I]
+                reads_obj_type = re.sub ('-[0-9]+\.[0-9]+$', "", reads_obj_type)  # remove trailing version
+                if reads_obj_type == 'KBaseSets.ReadsSet':
+                    # unpack it
+                    if input_reads_obj_type in Set_types:
+                        try:
+                            setAPI_Client = SetAPI(url=self.serviceWizardURL, token=ctx['token'], service_ver='beta')  # for dynamic service
+                            readsSet_obj = setAPI_Client.get_reads_set_v1 ({'ref':reads_ref,'include_item_info':1})
+
+                        except Exception as e:
+                            raise ValueError('SetAPI FAILURE: Unable to get read library set object from workspace: (' + str(input_params['input_reads_ref'])+")\n" + str(e))
+                        for readsLibrary_obj in readsSet_obj['data']['items']:
+                            all_reads_refs += readsLibrary_obj['ref']
+                else:
+                    # use other reads objects "as is"
+                    all_reads_refs += reads_ref
+            except Exception as e:
+                raise ValueError('Unable to get read library object from workspace: (' + str(reads_ref) +')' + str(e))
 
         # RUN call variants in parallel
         report_text = ''
         parallel_tasks = []
-        for reads_ref in reads_refs:
+        for reads_ref in all_reads_refs:
             single_params = copy.deepcopy(params)
-            single_params['reads_ref'] = reads_refs
+            del single_params['reads_refs']
+            single_params['reads_ref'] = reads_ref
 
             parallel_tasks.append( {'module_name': 'kb_meta_decoder',
                                     'function_name': 'call_variants_single',
