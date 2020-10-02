@@ -22,14 +22,14 @@
             }
         },
         {
-            "id": "reads_ref",
+            "id": "reads_refs",
             "optional": false,
             "advanced": false,
-            "allow_multiple": false,
+            "allow_multiple": true,
             "default_values": [ "" ],
             "field_type": "text",
             "text_options": {
-                "valid_ws_types": [ "KBaseFile.PairedEndLibrary", "KBaseFile.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary", "KBaseAssembly.SingleEndLibrary" ]
+                "valid_ws_types": [ "KBaseFile.PairedEndLibrary", "KBaseFile.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary", "KBaseAssembly.SingleEndLibrary", "KBaseSets.ReadsSet" ]
             }
         },
         {
@@ -53,18 +53,6 @@
             "text_options": {
                 "validate_as": "int"
 	    }
-        },
-        {
-            "id": "output_vcf",
-            "optional": false,
-            "advanced": false,
-            "allow_multiple": false,
-            "default_values": [ "" ],
-            "field_type": "text",
-            "text_options": {
-                "valid_ws_types": [ "KBaseFile.PairedEndLibrary", "KBaseFile.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary", "KBaseAssembly.SingleEndLibrary" ],
-		"is_output_name": true
-            }
         }
     ],
     "behavior": {
@@ -84,8 +72,8 @@
                     "target_property": "assembly_ref",
                     "target_type_transform": "resolved-ref"
                 },{
-                    "input_parameter": "reads_ref",
-                    "target_property": "reads_ref",
+                    "input_parameter": "reads_refs",
+                    "target_property": "reads_refs",
                     "target_type_transform": "resolved-ref"
                 },{
                     "input_parameter": "min_mapping_quality",
@@ -93,9 +81,6 @@
                 },{
                     "input_parameter": "min_depth",
                     "target_property": "min_depth"
-                },{
-                    "input_parameter": "output_vcf",
-                    "target_property": "output_vcf"
                 }
             ],
             "output_mapping": [

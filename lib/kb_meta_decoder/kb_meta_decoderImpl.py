@@ -13,6 +13,7 @@ from installed_clients.DataFileUtilClient import DataFileUtil as DFUClient
 from installed_clients.KBaseReportClient import KBaseReport as ReportClient
 from installed_clients.ReadsUtilsClient import ReadsUtils as RUClient
 from installed_clients.VariationUtilClient import VariationUtil as VUClient
+from installed_clients.KBParallelClient import KBParallel
 #END_HEADER
 
 
@@ -31,9 +32,9 @@ class kb_meta_decoder:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.1"
+    VERSION = "0.0.2"
     GIT_URL = "git@github.com:kbaseapps/kb_meta_decoder.git"
-    GIT_COMMIT_HASH = "2ce3e97483169a6528536bad50068cce5fce1182"
+    GIT_COMMIT_HASH = "b4e83d791155b12efdf049d6021e1446b4bb0a71"
 
     #BEGIN_CLASS_HEADER
     SERVICE_VER = 'release'
@@ -423,9 +424,9 @@ class kb_meta_decoder:
         Call variants in a reference assembly.  Should be based on mapped reads (BAM file).
         :param params: instance of type "CallVariantsParams" -> structure:
            parameter "workspace_name" of String, parameter "workspace_id" of
-           String, parameter "assembly_ref" of String, parameter "reads_ref"
-           of String, parameter "output_vcf" of String, parameter
-           "min_mapping_quality" of Long, parameter "min_depth" of Long
+           String, parameter "assembly_ref" of String, parameter "reads_refs"
+           of list of String, parameter "min_mapping_quality" of Long,
+           parameter "min_depth" of Long
         :returns: instance of type "ReportResults" -> structure: parameter
            "report_name" of String, parameter "report_ref" of String
         """
@@ -444,8 +445,121 @@ class kb_meta_decoder:
         required_params = ['workspace_name',
                            'workspace_id',
                            'assembly_ref',
+                           'reads_refs',
+                           'min_mapping_quality',
+                           'min_depth'
+                          ]
+        for required_param in required_params:
+            if required_param not in params or params[required_param] == None:
+                raise ValueError ("Must define required param: '"+required_param+"'")
+            
+        # load provenance
+        provenance = [{}]
+        if 'provenance' in ctx:
+            provenance = ctx['provenance']
+        provenance[0]['input_ws_objects']=[str(params['assembly_ref'])]
+        provenance[0]['input_ws_objects'] += str(params['reads_ref']) for reads_ref in reads_refs
+
+        try:
+            self.log(console,'instantiating KBParallel')
+            parallelClient = KBParallel(self.callbackURL)
+        except:
+            raise ValueError("unable to instantiate KBParallelClient")
+
+        # RUN call variants in parallel
+        report_text = ''
+        parallel_tasks = []
+        for reads_ref in reads_refs:
+            single_params = copy.deepcopy(params)
+            single_params['reads_ref'] = reads_refs
+
+            parallel_tasks.append( {'module_name': 'kb_meta_decoder',
+                                    'function_name': 'call_variants_single',
+                                    'version': 'dev',
+                                    'parameters': single_params
+                                    } )
+            self.log(console, "QUEUING calling variants for reads: " + reads_ref)
+            self.log(console, "\n" + pformat(single_params))
+            self.log(console, str(datetime.now()))
+
+        # run them in batch
+        batch_run_params = {'tasks': parallel_tasks,
+                            'runner': 'parallel',
+                            'concurrent_local_tasks': 1,
+                            'concurrent_njsw_tasks': 0,
+                            'max_retries': 2}
+
+        self.log(console, "RUNNING all variant calling in parallel.")
+        self.log(console, "\n" + pformat(batch_run_params))
+        self.log(console, str(datetime.now()))
+        kbparallel_results = parallelClient.run_batch(batch_run_params)
+
+        for fd in kbparallel_results['results']:
+           if fd['result_package']['error'] is not None:
+               raise ValueError('kb_parallel failed to complete without throwing an error on at least one of the nodes.')
+
+        ### combine and save reports
+        for fd in kbparallel_results['results']:
+            self.log(console, "FD = " + pformat(fd))
+            this_output_ref = fd['result_package']['output_result_id']
+            this_report_name = fd['result_package']['report_name']
+            this_report_ref = fd['result_package']['report_ref']
+
+            try:
+                this_report_obj = wsClient.get_objects([{'ref': this_report_ref}])[0]['data']
+            except:
+                raise ValueError("unable to fetch report: " + this_report_ref)
+            report_text += this_report_obj['text_message']
+            report_text += "\n\n"
+
+        ### build and save the report
+        reportObj = {
+            'objects_created': [],
+            'text_message': report_text
+        }
+        SERVICE_VER = 'release'
+        reportClient = KBaseReport(self.callbackURL, token=ctx['token'], service_ver=SERVICE_VER)
+        report_info = reportClient.create({'report': reportObj, 'workspace_name': params['workspace_name']})
+
+        ### construct the output to send back
+        output = {'report_name': report_info['name'], 'report_ref': report_info['ref']}
+
+        #END call_variants
+
+        # At some point might do deeper type checking...
+        if not isinstance(output, dict):
+            raise ValueError('Method call_variants return value ' +
+                             'output is not type dict as required.')
+        # return the results
+        return [output]
+
+    def call_variants_single(self, ctx, params):
+        """
+        Call variants in a reference assembly.  Should be based on mapped reads (BAM file).
+        :param params: instance of type "CallVariantsSingleParams" ->
+           structure: parameter "workspace_name" of String, parameter
+           "workspace_id" of String, parameter "assembly_ref" of String,
+           parameter "reads_ref" of String, parameter "min_mapping_quality"
+           of Long, parameter "min_depth" of Long
+        :returns: instance of type "ReportResults" -> structure: parameter
+           "report_name" of String, parameter "report_ref" of String
+        """
+        # ctx is the context object
+        # return variables are: output
+        #BEGIN call_variants_single
+        console = []
+        self.log(console, 'Running call_variants_single with parameters: ')
+        self.log(console, "\n"+pformat(params))
+
+        token = ctx['token']
+        env = os.environ.copy()
+        env['KB_AUTH_TOKEN'] = token
+
+        # param checks
+        required_params = ['workspace_name',
+                           'workspace_id',
+                           'assembly_ref',
                            'reads_ref',
-                           'output_vcf',
                            'min_mapping_quality',
                            'min_depth'
                           ]
@@ -528,7 +642,7 @@ class kb_meta_decoder:
         self.get_vcf_stats(console,vcf_file_path)
 
         # build report
-        reportName = 'kb_call_variants_report_'+str(uuid.uuid4())
+        reportName = 'kb_call_variants_single_report_'+str(uuid.uuid4())
 
         # don't claim the VCF object, or it will overwrite
         # Ranjan's linked report.
@@ -551,11 +665,11 @@ class kb_meta_decoder:
 
         output = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
 
-        #END call_variants
+        #END call_variants_single
 
         # At some point might do deeper type checking...
         if not isinstance(output, dict):
-            raise ValueError('Method call_variants return value ' +
+            raise ValueError('Method call_variants_single return value ' +
                              'output is not type dict as required.')
         # return the results
         return [output]

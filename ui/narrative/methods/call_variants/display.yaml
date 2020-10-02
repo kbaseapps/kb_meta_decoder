@@ -30,17 +30,11 @@ parameters :
         short-hint : |
             The reference assembly for which variants will be called.
 
-    reads_ref :
+    reads_refs :
         ui-name : |
             Reads
         short-hint : |
-            These reads will be mapped and then used to call variants.
-
-    output_vcf :
-        ui-name : |
-            Output variants object
-        short-hint : |
-            Name for the output variants object
+            All reads sets will be mapped and then used to call variants.
 
     min_mapping_quality :
         ui-name : |

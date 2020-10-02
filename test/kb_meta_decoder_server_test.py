@@ -74,7 +74,7 @@ class kb_meta_decoderTest(unittest.TestCase):
         ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
                                                         'workspace_id': test_ws_id,
                                                         'assembly_ref' : test_assembly,
-                                                        'reads_ref' : test_reads,
+                                                        'reads_refs' : [test_reads],
                                                         'min_mapping_quality' : '30',
                                                         'min_depth' : '50',
                                                         'output_vcf' : 'test_vcf'})
