@@ -464,7 +464,7 @@ class kb_meta_decoder:
             provenance = ctx['provenance']
         provenance[0]['input_ws_objects']=[str(params['assembly_ref'])]
         for reads_ref in params['reads_refs']:
-            provenance[0]['input_ws_objects'] += str(reads_ref)
+            provenance[0]['input_ws_objects'].append(str(reads_ref))
 
         try:
             self.log(console,'instantiating KBParallel')
@@ -495,10 +495,10 @@ class kb_meta_decoder:
                         except Exception as e:
                             raise ValueError('SetAPI FAILURE: Unable to get read library set object from workspace: (' + str(input_params['input_reads_ref'])+")\n" + str(e))
                         for readsLibrary_obj in readsSet_obj['data']['items']:
-                            all_reads_refs += readsLibrary_obj['ref']
+                            all_reads_refs.append(readsLibrary_obj['ref'])
                 else:
                     # use other reads objects "as is"
-                    all_reads_refs += reads_ref
+                    all_reads_refs.append(reads_ref)
             except Exception as e:
                 raise ValueError('Unable to get read library object from workspace: (' + str(reads_ref) +')' + str(e))
 
@@ -535,28 +535,48 @@ class kb_meta_decoder:
            if fd['result_package']['error'] is not None:
                raise ValueError('kb_parallel failed to complete without throwing an error on at least one of the nodes.')
 
-        ### combine and save reports
+        ### combine individual reports
+        output_files = []
         for fd in kbparallel_results['results']:
             self.log(console, "FD = " + pformat(fd))
-            this_output_ref = fd['result_package']['output_result_id']
-            this_report_name = fd['result_package']['report_name']
-            this_report_ref = fd['result_package']['report_ref']
+            this_report_ref = fd['result_package']['result'][0]['report_ref']
 
             try:
                 this_report_obj = wsClient.get_objects([{'ref': this_report_ref}])[0]['data']
             except:
                 raise ValueError("unable to fetch report: " + this_report_ref)
-            report_text += this_report_obj['text_message']
+            report_text += this_report_obj['message']
             report_text += "\n\n"
+            output_files.extend(this_report_obj['file_links'])
 
-        ### build and save the report
+        ### build and save the combined report
+        reportName = 'kb_call_variants_report_'+str(uuid.uuid4())
+        reportObj = {'objects_created': [],
+                     'message': report_text,
+                     'direct_html': None,
+                     'direct_html_link_index': None,
+                     'file_links': output_files,
+                     'html_links': [],
+                     'workspace_name': params['workspace_name'],
+                     'report_object_name': reportName
+                     }
+
         reportObj = {
             'objects_created': [],
-            'text_message': report_text
+            'text_message': report_text,
+            'direct_html': None,
+            'direct_html_link_index': None,
+            'file_links': output_files,
+            'html_links': []
         }
+
         SERVICE_VER = 'release'
-        reportClient = KBaseReport(self.callbackURL, token=ctx['token'], service_ver=SERVICE_VER)
-        report_info = reportClient.create({'report': reportObj, 'workspace_name': params['workspace_name']})
+        # save report object
+        try:
+            reportClient = reportClient(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+            report_info = reportClient.create_extended_report(reportObj)
+        except:
+            raise ValueError ("no report generated")
 
         ### construct the output to send back
         output = {'report_name': report_info['name'], 'report_ref': report_info['ref']}
