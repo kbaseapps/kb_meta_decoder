@@ -538,16 +538,27 @@ class kb_meta_decoder:
         ### combine individual reports
         output_files = []
         for fd in kbparallel_results['results']:
-            self.log(console, "FD = " + pformat(fd))
+            # self.log(console, "FD = " + pformat(fd))
             this_report_ref = fd['result_package']['result'][0]['report_ref']
 
             try:
                 this_report_obj = wsClient.get_objects([{'ref': this_report_ref}])[0]['data']
             except:
                 raise ValueError("unable to fetch report: " + this_report_ref)
-            report_text += this_report_obj['message']
+            # self.log(console, "REPORT = "+pformat(this_report_obj))
+            report_text += this_report_obj['text_message']
             report_text += "\n\n"
-            output_files.extend(this_report_obj['file_links'])
+            reads_pattern = '\'reads_ref\': \'(\d+/\d+/\d+)\''
+            match = re.search(reads_pattern, this_report_obj['text_message']) 
+            if match:
+                reads_ref = match.group(1)
+            else:
+                reads_ref = "unknown"
+            for link in this_report_obj['file_links']:
+                output_files.append({'shock_id': link['URL'].split('/')[-1],
+                                     'name': link['name'],
+                                     'label': link['label']+' for '+reads_ref,
+                                     'description': link['description']+' for '+reads_ref})
 
         ### build and save the combined report
         reportName = 'kb_call_variants_report_'+str(uuid.uuid4())
@@ -561,19 +572,10 @@ class kb_meta_decoder:
                      'report_object_name': reportName
                      }
 
-        reportObj = {
-            'objects_created': [],
-            'text_message': report_text,
-            'direct_html': None,
-            'direct_html_link_index': None,
-            'file_links': output_files,
-            'html_links': []
-        }
-
         SERVICE_VER = 'release'
         # save report object
         try:
-            reportClient = reportClient(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+            reportClient = ReportClient(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
             report_info = reportClient.create_extended_report(reportObj)
         except:
             raise ValueError ("no report generated")
