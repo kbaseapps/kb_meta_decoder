@@ -318,7 +318,7 @@ class kb_meta_decoder:
         #BEGIN_CONSTRUCTOR
         self.scratch = os.path.abspath(config['scratch'])
         self.workspace_url = config['workspace-url']
-        self.service_wizard_url = config['service-wizard-url']
+        self.service_wizard_url = config['srv-wiz-url']
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.shared_folder = config['scratch']
         logging.basicConfig(format='%(created)s %(levelname)s: %(message)s',
