@@ -52,8 +52,7 @@ class kb_meta_decoderTest(unittest.TestCase):
             cls.wsClient.delete_workspace({'workspace': cls.wsName})
             print('Test workspace was deleted')
 
-    # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    # @unittest.skip("vcf upload not currently working")
+    @unittest.skip("call variant test takes 10 min")
     def test_call_variants(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -76,8 +75,32 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'assembly_ref' : test_assembly,
                                                         'reads_refs' : [test_reads],
                                                         'min_mapping_quality' : '30',
-                                                        'min_depth' : '50',
-                                                        'output_vcf' : 'test_vcf'})
+                                                        'min_depth' : '50'})
+
+    # @unittest.skip("vcf upload not currently working")
+    def test_call_variants_readsset(self):
+        # Prepare test objects in workspace if needed using
+        # self.getWsClient().save_objects({'workspace': self.getWsName(),
+        #                                  'objects': []})
+        #
+        # Run your method by
+        # ret = self.getImpl().your_method(self.getContext(), parameters...)
+        #
+        # Check returned data with
+        # self.assertEqual(ret[...], ...) or other unittest methods
+
+        # these test objects are in appdev:
+        test_ws_name = "jmc:narrative_1576867921697"
+        test_ws_id = "35222"
+        test_assembly = "35222/2/1"
+        test_reads = "35222/93/1"
+        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
+        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
+                                                        'workspace_id': test_ws_id,
+                                                        'assembly_ref' : test_assembly,
+                                                        'reads_refs' : [test_reads],
+                                                        'min_mapping_quality' : '30',
+                                                        'min_depth' : '50'})
 
     @unittest.skip("current focus on calling variants")
     def test_calc_pop_stat(self):
