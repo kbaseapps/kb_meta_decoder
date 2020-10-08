@@ -17,7 +17,7 @@ from installed_clients.KBaseReportClient import KBaseReport as ReportClient
 from installed_clients.ReadsUtilsClient import ReadsUtils as RUClient
 from installed_clients.VariationUtilClient import VariationUtil as VUClient
 from installed_clients.KBParallelClient import KBParallel
-from installed_clients.SetAPIClient import SetAPI
+from SetAPI.SetAPIServiceClient import SetAPI
 #END_HEADER
 
 
@@ -489,18 +489,19 @@ class kb_meta_decoder:
                 if reads_obj_type == 'KBaseSets.ReadsSet':
                     # unpack it
                     try:
-                        setAPI_Client = SetAPI(url=self.service_wizard_url, token=ctx['token'], service_ver='beta')  # for dynamic service
-                        readsSet_obj = setAPI_Client.get_reads_set_v1 ({'ref':reads_ref,'include_item_info':1})
+                        setAPI_Client = SetAPI(url=self.service_wizard_url, token=ctx['token'])
+                        self.log(console,'getting reads set '+reads_ref)
+                        readsSet_obj = setAPI_Client.get_reads_set_v1({'ref':reads_ref,'include_item_info':1})
 
                     except Exception as e:
-                        raise ValueError('SetAPI FAILURE: Unable to get read library set object from workspace: (' + reads_ref+ '\n' + str(e))
+                        raise ValueError('SetAPI FAILURE: Unable to get read library set object: (' + reads_ref+ ')\n' + str(e))
                     for readsLibrary_obj in readsSet_obj['data']['items']:
                         all_reads_refs.append(readsLibrary_obj['ref'])
                 else:
                     # use other reads objects "as is"
                     all_reads_refs.append(reads_ref)
             except Exception as e:
-                raise ValueError('Unable to get read library object from workspace: (' + str(reads_ref) +')' + str(e))
+                raise ValueError('Unable to get read library object: (' + str(reads_ref) +')' + str(e))
 
         # RUN call variants in parallel
         report_text = ''

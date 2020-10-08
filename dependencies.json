@@ -19,10 +19,6 @@
   "type" : "sdk",
   "version_tag" : "release"
 }, {
-  "module_name" : "SetAPI",
-  "type" : "sdk",
-  "version_tag" : "release"
-}, {
   "module_name" : "VariationUtil",
   "type" : "sdk",
   "version_tag" : "dev"
