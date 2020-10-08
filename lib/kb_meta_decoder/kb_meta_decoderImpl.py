@@ -318,6 +318,7 @@ class kb_meta_decoder:
         #BEGIN_CONSTRUCTOR
         self.scratch = os.path.abspath(config['scratch'])
         self.workspace_url = config['workspace-url']
+        self.service_wizard_url = config['service-wizard-url']
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.shared_folder = config['scratch']
         logging.basicConfig(format='%(created)s %(levelname)s: %(message)s',
@@ -488,7 +489,7 @@ class kb_meta_decoder:
                 if reads_obj_type == 'KBaseSets.ReadsSet':
                     # unpack it
                     try:
-                        setAPI_Client = SetAPI(url=self.serviceWizardURL, token=ctx['token'], service_ver='beta')  # for dynamic service
+                        setAPI_Client = SetAPI(url=self.service_wizard_url, token=ctx['token'], service_ver='beta')  # for dynamic service
                         readsSet_obj = setAPI_Client.get_reads_set_v1 ({'ref':reads_ref,'include_item_info':1})
 
                     except Exception as e:
