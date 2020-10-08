@@ -487,15 +487,14 @@ class kb_meta_decoder:
                 reads_obj_type = re.sub ('-[0-9]+\.[0-9]+$', "", reads_obj_type)  # remove trailing version
                 if reads_obj_type == 'KBaseSets.ReadsSet':
                     # unpack it
-                    if input_reads_obj_type in Set_types:
-                        try:
-                            setAPI_Client = SetAPI(url=self.serviceWizardURL, token=ctx['token'], service_ver='beta')  # for dynamic service
-                            readsSet_obj = setAPI_Client.get_reads_set_v1 ({'ref':reads_ref,'include_item_info':1})
+                    try:
+                        setAPI_Client = SetAPI(url=self.serviceWizardURL, token=ctx['token'], service_ver='beta')  # for dynamic service
+                        readsSet_obj = setAPI_Client.get_reads_set_v1 ({'ref':reads_ref,'include_item_info':1})
 
-                        except Exception as e:
-                            raise ValueError('SetAPI FAILURE: Unable to get read library set object from workspace: (' + str(input_params['input_reads_ref'])+")\n" + str(e))
-                        for readsLibrary_obj in readsSet_obj['data']['items']:
-                            all_reads_refs.append(readsLibrary_obj['ref'])
+                    except Exception as e:
+                        raise ValueError('SetAPI FAILURE: Unable to get read library set object from workspace: (' + reads_ref+ '\n' + str(e))
+                    for readsLibrary_obj in readsSet_obj['data']['items']:
+                        all_reads_refs.append(readsLibrary_obj['ref'])
                 else:
                     # use other reads objects "as is"
                     all_reads_refs.append(reads_ref)
