@@ -70,14 +70,14 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_assembly = "35222/2/1"
         test_reads = "35222/3/1"
         # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
-        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
+        ret = self.serviceImpl.call_variants_single(self.ctx, {'workspace_name': test_ws_name,
                                                         'workspace_id': test_ws_id,
                                                         'assembly_ref' : test_assembly,
-                                                        'reads_refs' : [test_reads],
+                                                        'reads_ref' : test_reads,
                                                         'min_mapping_quality' : '30',
                                                         'min_depth' : '50'})
 
-    # @unittest.skip("vcf upload not currently working")
+    # @unittest.skip("parallel version is working")
     def test_call_variants_readsset(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),

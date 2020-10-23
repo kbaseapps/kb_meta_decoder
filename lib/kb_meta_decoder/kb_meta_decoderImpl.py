@@ -524,7 +524,7 @@ class kb_meta_decoder:
         batch_run_params = {'tasks': parallel_tasks,
                             'runner': 'parallel',
                             'concurrent_local_tasks': 1,
-                            'concurrent_njsw_tasks': 0,
+                            'concurrent_njsw_tasks': 50,
                             'max_retries': 2}
 
         self.log(console, "RUNNING all variant calling in parallel.")
