@@ -223,6 +223,47 @@ class kb_meta_decoder:
 
         return vcf_file_path
 
+    # graph variants
+    def graph_variants(self, console, vcf_file_path):
+        try:
+            self.log(console,"Graphing variants.\n");
+            output_dir, vcf_name = os.path.split(vcf_file_path)
+            cmdstring = "python /kb/module/meta_decoder/meta_decoder.sum.py -i "+output_dir+" -fq .inter.fastq -R R"
+            self.log(console,"command: "+cmdstring);
+            cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            for line in cmdProcess.stdout:
+                print(line.decode("utf-8").rstrip())
+            cmdProcess.wait()
+            print('return code: ' + str(cmdProcess.returncode)+ '\n')
+            if cmdProcess.returncode != 0:
+                raise ValueError('Error running meta_decoder.sum.py, return code: ' +
+                                 str(cmdProcess.returncode) + '\n')
+
+            pdf_file_path = os.path.join(output_dir,"KBase.snp.profile.SNP.pdf")
+            if not os.path.exists(pdf_file_path):
+                raise ValueError('PDF file not found')
+
+            # convert PDF to PNG
+            png_file_path = os.path.join(output_dir,"KBase.snp.profile.SNP.png")
+            cmdstring = "pdftoppm -png "+pdf_file_path+" > "+png_file_path
+            self.log(console,"command: "+cmdstring);
+            cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            for line in cmdProcess.stdout:
+                print(line.decode("utf-8").rstrip())
+            cmdProcess.wait()
+            print('return code: ' + str(cmdProcess.returncode)+ '\n')
+            if cmdProcess.returncode != 0:
+                raise ValueError('Error running pdftoppm, return code: ' +
+                                 str(cmdProcess.returncode) + '\n')
+
+            if not os.path.exists(png_file_path):
+                raise ValueError('PNG file not found')
+            
+        except Exception as e:
+            raise ValueError('Unable to graph variants\n' + str(e))
+
+        return pdf_file_path, png_file_path
+
     # run bcftools to get summary statistics
     def get_vcf_stats(self, console, vcf_file_path):
         try:
@@ -657,6 +698,10 @@ class kb_meta_decoder:
         vcf_file_path = self.call_variants_bcftools(console, contigs_file_path, sorted_bam_file_path, params['min_mapping_quality'], params['min_depth'])
         print("got vcf output "+vcf_file_path)
 
+        # graph variants
+        pdf_file_path, png_file_path = self.graph_variants(console, vcf_file_path)
+        print("got pdf output "+pdf_file_path)
+
         # save VCF file
         try:
             print("NOT using VUClient to save VCF - need object type release in KBase")
@@ -679,7 +724,7 @@ class kb_meta_decoder:
             cmdProcess.wait()
             raise
 
-        # save bam and vcf files for report
+        # save bam and vcf files, and pictures, for report
         output_files = []
         try:
             dfuClient = DFUClient(self.callback_url, token=token, service_ver=self.SERVICE_VER)
@@ -697,6 +742,12 @@ class kb_meta_decoder:
                              'name': os.path.basename(vcf_file_path),
                              'label': 'VCF file',
                              'description': 'VCF file'})
+        dfu_output = dfuClient.file_to_shock({'file_path': pdf_file_path,
+                                              'make_handle': 0})
+        output_files.append({'shock_id': dfu_output['shock_id'],
+                             'name': os.path.basename(pdf_file_path),
+                             'label': 'PDF file',
+                             'description': 'PDF file'})
 
         # get vcf stats
         self.get_vcf_stats(console,vcf_file_path)
