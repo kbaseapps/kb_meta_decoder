@@ -544,6 +544,13 @@ class kb_meta_decoder:
             except Exception as e:
                 raise ValueError('Unable to get read library object: (' + str(reads_ref) +')' + str(e))
 
+        # if only one object, call _single version instead
+        if len(all_reads_refs)==1:
+            single_params = copy.deepcopy(params)
+            del single_params['reads_refs']
+            single_params['reads_ref'] = all_reads_refs[0]
+            return self.call_variants_single(ctx, single_params)
+
         # RUN call variants in parallel
         report_text = ''
         parallel_tasks = []
@@ -755,14 +762,39 @@ class kb_meta_decoder:
         # build report
         reportName = 'kb_call_variants_single_report_'+str(uuid.uuid4())
 
+        # make index/explanation of HTML output files
+        # and load output into shock
+        output_html = []
+        html_message = '<b>Need some explanation of this figure here</b>:\n'+ \
+            '<p><img src="'+png_file_path+'"><p>\n'+ \
+            '<br>\n'.join(console)
+
+        html_dir = '/kb/module/work/tmp/'+reportName
+        os.makedirs(html_dir)
+        # move png file to html dir
+        os.rename(png_file_path, os.path.join(html_dir,os.path.basename(png_file_path)))
+        html_file_path = os.path.join(html_dir,'index.html')
+        with open(html_file_path, 'w') as html_handle:
+            html_handle.write(html_message)
+        try:
+            dfu_output = dfuClient.file_to_shock({'file_path': html_file_path,
+                                                  'pack': 'zip',
+                                                  'make_handle': 0})
+            output_html.append({'shock_id': dfu_output['shock_id'],
+                                'name': 'index.html',
+                                'label': 'Call variants report'})
+        except:
+            raise ValueError('Logging exception loading html_report to shock')
+
+        # build report
         # don't claim the VCF object, or it will overwrite
         # Ranjan's linked report.
         reportObj = {'objects_created': [], # {'ref':vcf_object}],
-                     'message': "\n".join(console),
+                     'message': '\n'.join(console),
                      'direct_html': None,
-                     'direct_html_link_index': None,
+                     'direct_html_link_index': 0,
                      'file_links': output_files,
-                     'html_links': [],
+                     'html_links': output_html,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
@@ -799,7 +831,7 @@ class kb_meta_decoder:
         # return variables are: output
         #BEGIN calculate_population_statistics
         console = []
-        self.log(console, 'Running call_variants with parameters: ')
+        self.log(console, 'Running calculate_population_statistics with parameters: ')
         self.log(console, "\n"+pformat(params))
 
         token = ctx['token']
