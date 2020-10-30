@@ -766,8 +766,9 @@ class kb_meta_decoder:
         # and load output into shock
         output_html = []
         html_message = '<b>Need some explanation of this figure here</b>:\n'+ \
-            '<p><img src="'+png_file_path+'"><p>\n'+ \
-            '<br>\n'.join(console)
+            '<p><img src="'+os.path.basename(png_file_path)+'"><p>\n<pre>\n'+ \
+            '\n'.join(console)+ \
+            '\n</pre>\n'
 
         html_dir = '/kb/module/work/tmp/'+reportName
         os.makedirs(html_dir)
