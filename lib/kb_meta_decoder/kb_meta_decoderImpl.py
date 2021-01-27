@@ -765,7 +765,8 @@ class kb_meta_decoder:
         # make index/explanation of HTML output files
         # and load output into shock
         output_html = []
-        html_message = '<b>Need some explanation of this figure here</b>:\n'+ \
+        html_message = '<b>Figure: Distribution of genotypes/strains across metagenome samples:</b>:\n'+ \
+            '<p>In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.\n'+ \
             '<p><img src="'+os.path.basename(png_file_path)+'"><p>\n<pre>\n'+ \
             '\n'.join(console)+ \
             '\n</pre>\n'
@@ -792,10 +793,10 @@ class kb_meta_decoder:
         # Ranjan's linked report.
         reportObj = {'objects_created': [], # {'ref':vcf_object}],
                      'message': '\n'.join(console),
-                     'direct_html': None,
+                     'direct_html': output_html,
                      'direct_html_link_index': 0,
                      'file_links': output_files,
-                     'html_links': output_html,
+                     'html_links': None,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
