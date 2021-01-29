@@ -184,8 +184,21 @@ class kb_meta_decoderTest(unittest.TestCase):
                         'name': 'mapped_reads.fastq',
                         'type': 'fastq'}
         cls.upload_reads('mapped_reads', {'single_genome': 0}, mapped_reads)
+
+        mapped_reads_1 = {'file': 'data/mapped_reads_1.fastq',
+                        'name': 'mapped_reads_1.fastq',
+                        'type': 'fastq'}
+        cls.upload_reads('mapped_reads_1', {'single_genome': 0}, mapped_reads_1)
+
+        mapped_reads_2 = {'file': 'data/mapped_reads_2.fastq',
+                        'name': 'mapped_reads_2.fastq',
+                        'type': 'fastq'}
+        cls.upload_reads('mapped_reads_2', {'single_genome': 0}, mapped_reads_2)
+
         # cls.upload_assembly('assembly_nohits', 'data/genome_fragment_nohits.fa');
         cls.upload_assembly('assembly_withhits', 'data/genome_fragment_withhits.fa');
+
+        cls.upload_assembly('assembly_nohits', 'data/genome_fragment_nohits.fa');
 
         print('Data staged.')
 
@@ -297,6 +310,53 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_name = self.wsName
         test_ws_id = self.wsID
         test_assembly = self.staged['assembly_withhits']['ref']
+        test_reads = [self.staged['mapped_reads']['ref']]
+        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
+        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
+                                                        'workspace_id': test_ws_id,
+                                                        'assembly_ref' : test_assembly,
+                                                        'reads_refs' : test_reads,
+                                                        'min_mapping_quality' : '30',
+                                                        'min_depth' : '50'})
+
+    def test_call_variants_small_parallel(self):
+        # Prepare test objects in workspace if needed using
+        # self.getWsClient().save_objects({'workspace': self.getWsName(),
+        #                                  'objects': []})
+        #
+        # Run your method by
+        # ret = self.getImpl().your_method(self.getContext(), parameters...)
+        #
+        # Check returned data with
+        # self.assertEqual(ret[...], ...) or other unittest methods
+
+        test_ws_name = self.wsName
+        test_ws_id = self.wsID
+        test_assembly = self.staged['assembly_withhits']['ref']
+        test_reads = [self.staged['mapped_reads_1']['ref'], self.staged['mapped_reads_2']['ref']]
+        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
+        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
+                                                        'workspace_id': test_ws_id,
+                                                        'assembly_ref' : test_assembly,
+                                                        'reads_refs' : test_reads,
+                                                        'min_mapping_quality' : '30',
+                                                        'min_depth' : '50'})
+
+    @unittest.skip("check parallel first")
+    def test_call_variants_small_nohits(self):
+        # Prepare test objects in workspace if needed using
+        # self.getWsClient().save_objects({'workspace': self.getWsName(),
+        #                                  'objects': []})
+        #
+        # Run your method by
+        # ret = self.getImpl().your_method(self.getContext(), parameters...)
+        #
+        # Check returned data with
+        # self.assertEqual(ret[...], ...) or other unittest methods
+
+        test_ws_name = self.wsName
+        test_ws_id = self.wsID
+        test_assembly = self.staged['assembly_nohits']['ref']
         test_reads = [self.staged['mapped_reads']['ref']]
         # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
         ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
