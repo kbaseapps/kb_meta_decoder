@@ -6,6 +6,7 @@ import sys
 from configparser import ConfigParser
 from pprint import pprint
 import requests
+import shutil
 
 from kb_meta_decoder.kb_meta_decoderImpl import kb_meta_decoder
 from kb_meta_decoder.kb_meta_decoderServer import MethodContext
@@ -14,6 +15,8 @@ from kb_meta_decoder.authclient import KBaseAuth as _KBaseAuth
 from installed_clients.WorkspaceClient import Workspace
 from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.AbstractHandleClient import AbstractHandle as HandleService
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.ReadsUtilsClient import ReadsUtils
 
 class kb_meta_decoderTest(unittest.TestCase):
 
@@ -56,6 +59,11 @@ class kb_meta_decoderTest(unittest.TestCase):
         cls.wsID = cls.getWsID()
         print('wsID is '+str(cls.wsID))
         cls.au = AssemblyUtil(cls.callback_url, token=cls.token, service_ver='release')
+        cls.dfu = DataFileUtil(url=cls.callback_url, token=cls.token)
+        cls.ru = ReadsUtils(cls.callback_url, token=cls.token)
+        cls.staged = {}
+        cls.nodes_to_delete = []
+        cls.handles_to_delete = []
         cls.setupTestData()
 
     @classmethod
@@ -89,57 +97,24 @@ class kb_meta_decoderTest(unittest.TestCase):
                         allow_redirects=True)
         print('Deleted shock node ' + node_id)
 
-    # Helper script borrowed from the transform service, logger removed              
-    @classmethod
-    def upload_file_to_shock(cls, file_path):
-        """                                                                          
-        Use HTTP multi-part POST to save a file to a SHOCK instance.                 
-        """
-
-        header = dict()
-        header["Authorization"] = "Oauth {0}".format(cls.token)
-
-        if file_path is None:
-            raise Exception("No file given for upload to SHOCK!")
-
-        with open(os.path.abspath(file_path), 'rb') as dataFile:
-            files = {'upload': dataFile}
-            print('POSTing data')
-            response = requests.post(
-                cls.shockURL + '/node', headers=header, files=files,
-                stream=True, allow_redirects=True)
-            print('got response')
-
-        if not response.ok:
-            response.raise_for_status()
-
-        result = response.json()
-
-        if result['error']:
-            raise Exception(result['error'][0])
-        else:
-            return result["data"]
-
     @classmethod
     def upload_file_to_shock_and_get_handle(cls, test_file):
         '''                                                                          
         Uploads the file in test_file to shock and returns the node and a            
         handle to the node.                                                          
         '''
+        # file can't be in /kb/module/test or dfu won't find it
+        temp_file = os.path.join("/kb/module/work/tmp", os.path.basename(test_file))
+        shutil.copy(os.path.join("/kb/module/test", test_file), temp_file)
+
         print('loading file to shock: ' + test_file)
-        node = cls.upload_file_to_shock(test_file)
-        pprint(node)
-        cls.nodes_to_delete.append(node['id'])
+        fts = cls.dfu.file_to_shock({'file_path': temp_file,
+                                     'make_handle':True})
 
-        print('creating handle for shock id ' + node['id'])
-        handle_id = cls.hs.persist_handle({'id': node['id'],
-                                           'type': 'shock',
-                                           'url': cls.shockURL
-                                         })
-        cls.handles_to_delete.append(handle_id)
+        cls.nodes_to_delete.append(fts['shock_id'])
+        cls.handles_to_delete.append(fts['handle']['hid'])
 
-        md5 = node['file']['checksum']['md5']
-        return node['id'], handle_id, md5, node['file']['size']
+        return fts['shock_id'], fts['handle']['hid'], fts['size']
 
     @classmethod
     def upload_reads(cls, wsobjname, object_body, fwd_reads,
@@ -157,7 +132,7 @@ class kb_meta_decoderTest(unittest.TestCase):
         print('\n===============staging data for object ' + wsobjname +
               '================')
         print('uploading forward reads file ' + fwd_reads['file'])
-        fwd_id, fwd_handle_id, fwd_md5, fwd_size = \
+        fwd_id, fwd_handle_id, fwd_size = \
             cls.upload_file_to_shock_and_get_handle(fwd_reads['file'])
 
         ob['fwd_id'] = fwd_id
@@ -165,10 +140,10 @@ class kb_meta_decoderTest(unittest.TestCase):
         rev_handle_id = None
         if rev_reads:
             print('uploading reverse reads file ' + rev_reads['file'])
-            rev_id, rev_handle_id, rev_md5, rev_size = \
+            rev_id, rev_handle_id, rev_size = \
                 cls.upload_file_to_shock_and_get_handle(rev_reads['file'])
             ob['rev_id'] = rev_id
-        obj_ref = cls.readUtilsImpl.upload_reads(ob)
+        obj_ref = cls.ru.upload_reads(ob)
         objdata = cls.wsClient.get_object_info_new({
             'objects': [{'ref': obj_ref['obj_ref']}]
             })[0]
@@ -181,14 +156,20 @@ class kb_meta_decoderTest(unittest.TestCase):
                                 }
 
     @classmethod
-    def upload_assembly(cls, a_name, fa_file_path):
+    def upload_assembly(cls, a_name, test_file):
         wsname = cls.getWsName()
         print('\n===============staging data for object ' + a_name +
               '================')
-        cls.au.save_assembly_from_fasta(
-            {'file': {'path': fa_file_path},
+        # file can't be in /kb/module/test or dfu won't find it
+        temp_file = os.path.join("/kb/module/work/tmp", os.path.basename(test_file))
+        shutil.copy(os.path.join("/kb/module/test", test_file), temp_file)
+        ref = cls.au.save_assembly_from_fasta(
+            {'file': {'path': temp_file},
              'workspace_name': wsname,
              'assembly_name': a_name})
+        objdata = cls.wsClient.get_object_info_new({
+            'objects': [{'ref': ref}]
+            })[0]
         cls.staged[a_name] = {'info': objdata,
                               'ref': cls.make_ref(objdata)}
 
