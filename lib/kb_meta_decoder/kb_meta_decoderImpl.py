@@ -63,7 +63,10 @@ class kb_meta_decoder:
         contig_file = auClient.get_assembly_as_fasta({'ref':assembly_ref}).get('path')
         sys.stdout.flush()   # don't remember why this matters
         contig_file_path = dfuClient.unpack_file({'file_path': contig_file})['file_path']
-        return contig_file_path
+        # rename to standard name, as other output depends on this
+        new_path = os.path.join(os.path.dirname(contig_file_path),'contigs.fa')
+        os.rename(contig_file_path, new_path)
+        return new_path
 
     # get the reads as FASTQ
     def download_reads(self, token, reads_ref):
@@ -239,12 +242,12 @@ class kb_meta_decoder:
                 raise ValueError('Error running meta_decoder.sum.py, return code: ' +
                                  str(cmdProcess.returncode) + '\n')
 
-            pdf_file_path = os.path.join(output_dir,"KBase.snp.profile.SNP.pdf")
+            pdf_file_path = os.path.join(output_dir,"genome.snp.profile.SNP.pdf")
             if not os.path.exists(pdf_file_path):
                 raise ValueError('PDF file not found')
 
             # convert PDF to PNG
-            png_file_path = os.path.join(output_dir,"KBase.snp.profile.SNP.png")
+            png_file_path = os.path.join(output_dir,"genome.snp.profile.SNP.png")
             cmdstring = "pdftoppm -png "+pdf_file_path+" > "+png_file_path
             self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -793,10 +796,10 @@ class kb_meta_decoder:
         # Ranjan's linked report.
         reportObj = {'objects_created': [], # {'ref':vcf_object}],
                      'message': '\n'.join(console),
-                     'direct_html': output_html,
+                     'direct_html': html_message,
                      'direct_html_link_index': 0,
                      'file_links': output_files,
-                     'html_links': None,
+                     'html_links': output_html,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
