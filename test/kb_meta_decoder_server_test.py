@@ -342,7 +342,6 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'min_mapping_quality' : '30',
                                                         'min_depth' : '50'})
 
-    @unittest.skip("check parallel first")
     def test_call_variants_small_nohits(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),

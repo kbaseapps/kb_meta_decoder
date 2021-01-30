@@ -1,6 +1,10 @@
 # kb_meta_decoder release notes
 =========================================
 
+0.0.4
+-----
+* Fixed unit tests to work with blob store, and added several small tests
+
 0.0.3
 -----
 * Call variants does multiple reads libraries at a time, in parallel
