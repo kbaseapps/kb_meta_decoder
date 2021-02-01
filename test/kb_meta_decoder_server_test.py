@@ -195,7 +195,6 @@ class kb_meta_decoderTest(unittest.TestCase):
                         'type': 'fastq'}
         cls.upload_reads('mapped_reads_2', {'single_genome': 0}, mapped_reads_2)
 
-        # cls.upload_assembly('assembly_nohits', 'data/genome_fragment_nohits.fa');
         cls.upload_assembly('assembly_withhits', 'data/genome_fragment_withhits.fa');
 
         cls.upload_assembly('assembly_nohits', 'data/genome_fragment_nohits.fa');
@@ -209,7 +208,7 @@ class kb_meta_decoderTest(unittest.TestCase):
             '/' + str(object_info[4])
 
 
-    @unittest.skip("call variant test takes 10 min")
+    @unittest.skip("takes 10 min")
     def test_call_variants(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -296,6 +295,7 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'reads_ref' : test_reads})
 
 
+    # @unittest.skip("working")
     def test_call_variants_small(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -319,6 +319,7 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'min_mapping_quality' : '30',
                                                         'min_depth' : '50'})
 
+    # @unittest.skip("working")
     def test_call_variants_small_parallel(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -342,6 +343,7 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'min_mapping_quality' : '30',
                                                         'min_depth' : '50'})
 
+    # @unittest.skip("make sure missing graph is handled correctly")
     def test_call_variants_small_nohits(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),

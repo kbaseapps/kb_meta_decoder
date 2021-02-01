@@ -36,7 +36,7 @@ class kb_meta_decoder:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.2"
+    VERSION = "0.0.5"
     GIT_URL = "git@github.com:kbaseapps/kb_meta_decoder.git"
     GIT_COMMIT_HASH = "b4e83d791155b12efdf049d6021e1446b4bb0a71"
 
@@ -50,7 +50,7 @@ class kb_meta_decoder:
         sys.stdout.flush()
 
     # get the contigs from the genome as FASTA
-    def download_assembly(self, token, assembly_ref):
+    def download_assembly(self, token, assembly_ref, output_dir):
         try:
             auClient = AUClient(self.callback_url, token=token, service_ver=self.SERVICE_VER)
         except Exception as e:
@@ -63,13 +63,14 @@ class kb_meta_decoder:
         contig_file = auClient.get_assembly_as_fasta({'ref':assembly_ref}).get('path')
         sys.stdout.flush()   # don't remember why this matters
         contig_file_path = dfuClient.unpack_file({'file_path': contig_file})['file_path']
+
         # rename to standard name, as other output depends on this
-        new_path = os.path.join(os.path.dirname(contig_file_path),'contigs.fa')
+        new_path = os.path.join(output_dir,'contigs.fa')
         os.rename(contig_file_path, new_path)
         return new_path
 
     # get the reads as FASTQ
-    def download_reads(self, token, reads_ref):
+    def download_reads(self, token, reads_ref, output_dir):
         try:
             ruClient = RUClient(url=self.callback_url, token=token)
             readsLibrary = ruClient.download_reads ({'read_libraries': [reads_ref],
@@ -79,11 +80,16 @@ class kb_meta_decoder:
         except Exception as e:
             raise ValueError('Unable to get reads library object from workspace: (' + reads_ref +")\n" + str(e))
 
-        return reads_file_path
+        # rename to standard name, as other output depends on this
+        new_path = os.path.join(output_dir,'reads.fastq')
+        os.rename(reads_file_path, new_path)
+        return new_path
 
     # run samtools to map reads
     def map_reads(self, console, input_contigs, input_reads):
         try:
+            output_dir = os.path.dirname(input_contigs)
+
             # first index the contigs
             self.log(console,"Indexing contigs.\n");
             cmdstring = "/usr/local/bin/bwa index "+input_contigs
@@ -98,7 +104,7 @@ class kb_meta_decoder:
                                  str(cmdProcess.returncode) + '\n')
 
             # store output
-            bam_file_path = os.path.join(self.scratch,"bam_file_"+str(uuid.uuid4())+".bam")
+            bam_file_path = os.path.join(output_dir,"mapped_reads.bam")
 
             # then map the reads
             self.log(console,"Mapping reads to contigs.\n");
@@ -147,7 +153,8 @@ class kb_meta_decoder:
     def sort_bam(self, console, bam_file_path):
         try:
             # store output
-            sorted_bam_file_path = os.path.join(self.scratch,"sorted_bam_file_"+str(uuid.uuid4())+".bam")
+            output_dir = os.path.dirname(bam_file_path)
+            sorted_bam_file_path = os.path.join(output_dir,"sorted_mapped_reads.bam")
 
             # run sort
             self.log(console,"Sorting mapped reads.\n");
@@ -191,9 +198,11 @@ class kb_meta_decoder:
     # call variants
     def call_variants_bcftools(self, console, contigs_file_path, sorted_bam_file_path, min_mapping_quality, min_depth):
         try:
+            output_dir = os.path.dirname(contigs_file_path)
+
             # store raw and filtered output
-            raw_vcf_file_path = os.path.join(self.scratch,"vcf_"+str(uuid.uuid4())+".raw.vcf")
-            vcf_file_path = os.path.join(self.scratch,"vcf_"+str(uuid.uuid4())+".flt.vcf")
+            raw_vcf_file_path = os.path.join(output_dir,"variants.raw.vcf")
+            vcf_file_path = os.path.join(output_dir,"variants.flt.vcf")
 
             # run mpileup
             self.log(console,"Calling variants.\n");
@@ -242,12 +251,21 @@ class kb_meta_decoder:
                 raise ValueError('Error running meta_decoder.sum.py, return code: ' +
                                  str(cmdProcess.returncode) + '\n')
 
-            pdf_file_path = os.path.join(output_dir,"genome.snp.profile.SNP.pdf")
+            # are there ever more than one?
+            pdf_file_path = ''
+            for file_name in os.listdir(output_dir):
+                if (file_name.endswith(".snp.profile.SNP.pdf")):
+                     pdf_file_path = os.path.join(output_dir,file_name)
+
             if not os.path.exists(pdf_file_path):
                 raise ValueError('PDF file not found')
 
+            new_path = os.path.join(output_dir,'SNP_profile.pdf')
+            os.rename(pdf_file_path, new_path)
+            pdf_file_path = new_path
+
             # convert PDF to PNG
-            png_file_path = os.path.join(output_dir,"genome.snp.profile.SNP.png")
+            png_file_path = os.path.join(output_dir,"SNP_profile.png")
             cmdstring = "pdftoppm -png "+pdf_file_path+" > "+png_file_path
             self.log(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -287,14 +305,22 @@ class kb_meta_decoder:
 
         return
 
-    # set up paths for meta_decoder
-    def setup_paths(self, console, reads_file_path, contigs_file_path):
-        self.log(console,"Setting up meta_decoder paths.\n");
+    # make output dir
+    def setup_output_dir(self, console):
+        self.log(console,"Setting up output dir.\n");
 
         timestamp = int((datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds() * 1000)
         output_dir = os.path.join(self.scratch, 'output_' + str(timestamp))
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
+        return output_dir
+
+
+    # set up paths for meta_decoder
+    def setup_paths(self, console, reads_file_path, contigs_file_path):
+        self.log(console,"Setting up meta_decoder paths.\n");
+
+        output_dir = self.setup_output_dir(console)
 
         try:
             cmdstring = "cd /meta_decoder && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s "+reads_file_path+" . && ln -s "+contigs_file_path+" . && cd .. && ln -s "+output_dir+" output_dir"
@@ -411,16 +437,19 @@ class kb_meta_decoder:
             provenance = ctx['provenance']
         provenance[0]['input_ws_objects']=[str(params['assembly_ref']),str(params['reads_ref'])]
 
+        # setup unique output dir
+        output_dir = self.setup_output_dir(console)
+
         # get the contigs from the genome as FASTA
-        contigs_file_path = self.download_assembly(token, params['assembly_ref'])
+        contigs_file_path = self.download_assembly(token, params['assembly_ref'], output_dir)
 
         # get the reads as FASTQ
-        reads_file_path = self.download_reads(token, params['reads_ref'])
+        reads_file_path = self.download_reads(token, params['reads_ref'], output_dir)
 
         # run samtools
         print("got contigs as "+contigs_file_path)
         print("got reads as "+reads_file_path)
-        bam_file_path = self.map_reads(console, contigs_file_path, reads_file_path)
+        bam_file_path = self.map_reads(console, contigs_file_path, reads_file_path, output_dir)
         print("got bam output "+bam_file_path)
 
         output_files = []
@@ -684,11 +713,14 @@ class kb_meta_decoder:
             provenance = ctx['provenance']
         provenance[0]['input_ws_objects']=[str(params['assembly_ref']),str(params['reads_ref'])]
 
+        # make dedicated output dir
+        output_dir = self.setup_output_dir(console)
+
         # get the contigs from the genome as FASTA
-        contigs_file_path = self.download_assembly(token, params['assembly_ref'])
+        contigs_file_path = self.download_assembly(token, params['assembly_ref'], output_dir)
 
         # get the reads as FASTQ
-        reads_file_path = self.download_reads(token, params['reads_ref'])
+        reads_file_path = self.download_reads(token, params['reads_ref'], output_dir)
 
         # run samtools
         print("got contigs as "+contigs_file_path)
@@ -709,8 +741,12 @@ class kb_meta_decoder:
         print("got vcf output "+vcf_file_path)
 
         # graph variants
-        pdf_file_path, png_file_path = self.graph_variants(console, vcf_file_path)
-        print("got pdf output "+pdf_file_path)
+        try:
+            pdf_file_path, png_file_path = self.graph_variants(console, vcf_file_path)
+            print("got pdf output "+pdf_file_path)
+        except Exception as e:
+            pdf_file_path = False
+            png_file_path = False
 
         # save VCF file
         try:
@@ -752,12 +788,13 @@ class kb_meta_decoder:
                              'name': os.path.basename(vcf_file_path),
                              'label': 'VCF file',
                              'description': 'VCF file'})
-        dfu_output = dfuClient.file_to_shock({'file_path': pdf_file_path,
-                                              'make_handle': 0})
-        output_files.append({'shock_id': dfu_output['shock_id'],
-                             'name': os.path.basename(pdf_file_path),
-                             'label': 'PDF file',
-                             'description': 'PDF file'})
+        if pdf_file_path:
+            dfu_output = dfuClient.file_to_shock({'file_path': pdf_file_path,
+                                                  'make_handle': 0})
+            output_files.append({'shock_id': dfu_output['shock_id'],
+                                 'name': os.path.basename(pdf_file_path),
+                                 'label': 'PDF file',
+                                 'description': 'PDF file'})
 
         # get vcf stats
         self.get_vcf_stats(console,vcf_file_path)
@@ -767,17 +804,22 @@ class kb_meta_decoder:
 
         # make index/explanation of HTML output files
         # and load output into shock
-        output_html = []
-        html_message = '<b>Figure: Distribution of genotypes/strains across metagenome samples:</b>:\n'+ \
-            '<p>In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.\n'+ \
-            '<p><img src="'+os.path.basename(png_file_path)+'"><p>\n<pre>\n'+ \
-            '\n'.join(console)+ \
-            '\n</pre>\n'
-
         html_dir = '/kb/module/work/tmp/'+reportName
         os.makedirs(html_dir)
-        # move png file to html dir
-        os.rename(png_file_path, os.path.join(html_dir,os.path.basename(png_file_path)))
+
+        output_html = []
+        if png_file_path:
+            html_message = '<b>Figure: Distribution of genotypes/strains across metagenome samples:</b>:\n'+ \
+                '<p>In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.\n'+ \
+                '<p><img src="'+os.path.basename(png_file_path)+'"><p>\n<pre>\n'+ \
+                '\n'.join(console)+ \
+                '\n</pre>\n'
+
+            # move png file to html dir
+            os.rename(png_file_path, os.path.join(html_dir,os.path.basename(png_file_path)))
+        else:
+            html_message = '<b>No variants found.</b>\n'
+
         html_file_path = os.path.join(html_dir,'index.html')
         with open(html_file_path, 'w') as html_handle:
             html_handle.write(html_message)

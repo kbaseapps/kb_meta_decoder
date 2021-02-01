@@ -1,6 +1,10 @@
 # kb_meta_decoder release notes
 =========================================
 
+0.0.5
+-----
+* Moved each job to separate output dir, to avoid filename collisions in scratch
+
 0.0.4
 -----
 * Fixed unit tests to work with blob store, and added several small tests
