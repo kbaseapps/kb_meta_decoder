@@ -295,7 +295,7 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'reads_ref' : test_reads})
 
 
-    # @unittest.skip("working")
+    @unittest.skip("working")
     def test_call_variants_small(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -343,7 +343,7 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                         'min_mapping_quality' : '30',
                                                         'min_depth' : '50'})
 
-    # @unittest.skip("make sure missing graph is handled correctly")
+    @unittest.skip("make sure missing graph is handled correctly")
     def test_call_variants_small_nohits(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),

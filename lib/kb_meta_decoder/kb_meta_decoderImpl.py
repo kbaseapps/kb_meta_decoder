@@ -36,7 +36,7 @@ class kb_meta_decoder:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.5"
+    VERSION = "0.0.6"
     GIT_URL = "git@github.com:kbaseapps/kb_meta_decoder.git"
     GIT_COMMIT_HASH = "b4e83d791155b12efdf049d6021e1446b4bb0a71"
 
@@ -93,7 +93,7 @@ class kb_meta_decoder:
             # first index the contigs
             self.log(console,"Indexing contigs.\n");
             cmdstring = "/usr/local/bin/bwa index "+input_contigs
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -109,7 +109,7 @@ class kb_meta_decoder:
             # then map the reads
             self.log(console,"Mapping reads to contigs.\n");
             cmdstring = "/usr/local/bin/bwa mem "+input_contigs+" "+input_reads+"|samtools view -S -b >"+bam_file_path
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -134,7 +134,7 @@ class kb_meta_decoder:
             # then map the reads
             self.log(console,"Getting bam stats.\n");
             cmdstring = "samtools flagstat "+bam_file_path
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 self.log(console,line.decode("utf-8").rstrip())
@@ -159,7 +159,7 @@ class kb_meta_decoder:
             # run sort
             self.log(console,"Sorting mapped reads.\n");
             cmdstring = "samtools sort "+bam_file_path+" -o "+sorted_bam_file_path
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -180,7 +180,7 @@ class kb_meta_decoder:
             # run index
             self.log(console,"Indexing mapped reads.\n");
             cmdstring = "samtools index "+bam_file_path
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -207,7 +207,7 @@ class kb_meta_decoder:
             # run mpileup
             self.log(console,"Calling variants.\n");
             cmdstring = "bcftools mpileup -a FMT/AD -B -d3000 -q"+str(min_mapping_quality)+" -Ou -f "+contigs_file_path+" "+sorted_bam_file_path+" | bcftools call --ploidy 1 -m -A > "+raw_vcf_file_path
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -220,7 +220,7 @@ class kb_meta_decoder:
             # filter and call variants
             self.log(console,"Filtering variants.\n");
             cmdstring = "bcftools filter -s LowQual -e 'DP>"+str(min_depth)+"' "+raw_vcf_file_path+" | bcftools view -v snps > "+vcf_file_path
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -241,7 +241,7 @@ class kb_meta_decoder:
             self.log(console,"Graphing variants.\n");
             output_dir, vcf_name = os.path.split(vcf_file_path)
             cmdstring = "python /kb/module/meta_decoder/meta_decoder.sum.py -i "+output_dir+" -fq .inter.fastq -R R"
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -266,8 +266,8 @@ class kb_meta_decoder:
 
             # convert PDF to PNG
             png_file_path = os.path.join(output_dir,"SNP_profile.png")
-            cmdstring = "pdftoppm -png "+pdf_file_path+" > "+png_file_path
-            self.log(console,"command: "+cmdstring);
+            cmdstring = "pdftoppm -png "+pdf_file_path+" -scale-to-x 200 > "+png_file_path
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -290,7 +290,7 @@ class kb_meta_decoder:
         try:
             self.log(console,"Getting vcf stats.\n");
             cmdstring = "bcftools stats "+vcf_file_path
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 self.log(console,line.decode("utf-8").rstrip())
@@ -307,7 +307,7 @@ class kb_meta_decoder:
 
     # make output dir
     def setup_output_dir(self, console):
-        self.log(console,"Setting up output dir.\n");
+        print("Setting up output dir.\n");
 
         timestamp = int((datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds() * 1000)
         output_dir = os.path.join(self.scratch, 'output_' + str(timestamp))
@@ -318,13 +318,13 @@ class kb_meta_decoder:
 
     # set up paths for meta_decoder
     def setup_paths(self, console, reads_file_path, contigs_file_path):
-        self.log(console,"Setting up meta_decoder paths.\n");
+        print(console,"Setting up meta_decoder paths.\n");
 
         output_dir = self.setup_output_dir(console)
 
         try:
             cmdstring = "cd /meta_decoder && ln -s /usr/bin/python3 bin/python && mkdir input_dir && cd input_dir && ln -s "+reads_file_path+" . && ln -s "+contigs_file_path+" . && cd .. && ln -s "+output_dir+" output_dir"
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -344,7 +344,7 @@ class kb_meta_decoder:
         try:
             self.log(console,"Running meta_decoder.\n");
             cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py -i input_dir -inf .fastq --r input_dir --rf .fa --s 1 --o output_dir --t 1 --bwa /usr/local/bin/bwa && /bin/sh sub_metadecoder/0.sh"
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -362,9 +362,9 @@ class kb_meta_decoder:
     # make html
     def make_html(self, console):
         try:
-            self.log(console,"Making HTML.\n");
+            print(console,"Making HTML.\n");
             cmdstring = "cd /meta_decoder && ./bin/python meta_decoder.py --o output_dir --html T && sh meta.decoder.visual.sh"
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -378,6 +378,17 @@ class kb_meta_decoder:
             raise ValueError('Unable to run meta_decoder for html\n' + str(e))
 
         return
+
+    # get object name
+    def get_object_name(self, token, object_ref):
+        try:
+            wsClient = Workspace(self.workspace_url, token=token)
+        except Exception as e:
+            raise ValueError("unable to instantiate wsClient. "+str(e))
+        [OBJID_I, NAME_I, TYPE_I, SAVE_DATE_I, VERSION_I, SAVED_BY_I, WSID_I, WORKSPACE_I, CHSUM_I, SIZE_I, META_I] = range(11)  # object_info tuple
+        obj_info = wsClient.get_object_info_new({'objects':[{'ref':object_ref}]})[0]
+        obj_name = obj_info[NAME_I]
+        return obj_name
 
 
     #END_CLASS_HEADER
@@ -414,8 +425,8 @@ class kb_meta_decoder:
         # return variables are: output
         #BEGIN map_reads_to_reference
         console = []
-        self.log(console, 'Running map_reads_to_reference with parameters: ')
-        self.log(console, "\n"+pformat(params))
+        print('Running map_reads_to_reference with parameters: ')
+        print("\n"+pformat(params))
 
         token = ctx['token']
         env = os.environ.copy()
@@ -513,8 +524,8 @@ class kb_meta_decoder:
         # return variables are: output
         #BEGIN call_variants
         console = []
-        self.log(console, 'Running call_variants with parameters: ')
-        self.log(console, "\n"+pformat(params))
+        print('Running call_variants with parameters: ')
+        print("\n"+pformat(params))
 
         token = ctx['token']
         env = os.environ.copy()
@@ -531,6 +542,7 @@ class kb_meta_decoder:
         for required_param in required_params:
             if required_param not in params or params[required_param] == None:
                 raise ValueError ("Must define required param: '"+required_param+"'")
+
             
         # load provenance
         provenance = [{}]
@@ -541,7 +553,7 @@ class kb_meta_decoder:
             provenance[0]['input_ws_objects'].append(str(reads_ref))
 
         try:
-            self.log(console,'instantiating KBParallel')
+            print(console,'instantiating KBParallel')
             parallelClient = KBParallel(self.callback_url)
         except:
             raise ValueError("unable to instantiate KBParallelClient")
@@ -563,7 +575,7 @@ class kb_meta_decoder:
                     # unpack it
                     try:
                         setAPI_Client = SetAPI(url=self.service_wizard_url, token=ctx['token'])
-                        self.log(console,'getting reads set '+reads_ref)
+                        print(console,'getting reads set '+reads_ref)
                         readsSet_obj = setAPI_Client.get_reads_set_v1({'ref':reads_ref,'include_item_info':1})
 
                     except Exception as e:
@@ -583,6 +595,11 @@ class kb_meta_decoder:
             single_params['reads_ref'] = all_reads_refs[0]
             return self.call_variants_single(ctx, single_params)
 
+
+        # otherwise, run in parallel
+        assembly_name = self.get_object_name(token, params['assembly_ref'])
+        self.log(console, 'Mapping multiple reads libraries to '+str(assembly_name)+' ('+str(params['assembly_ref'])+')')
+
         # RUN call variants in parallel
         report_text = ''
         parallel_tasks = []
@@ -596,9 +613,9 @@ class kb_meta_decoder:
                                     'version': 'dev',
                                     'parameters': single_params
                                     } )
-            self.log(console, "QUEUING calling variants for reads: " + reads_ref)
-            self.log(console, "\n" + pformat(single_params))
-            self.log(console, str(datetime.now()))
+            print("QUEUING calling variants for reads: " + reads_ref)
+            print("\n" + pformat(single_params))
+            print(str(datetime.now()))
 
         # run them in batch
         batch_run_params = {'tasks': parallel_tasks,
@@ -607,17 +624,30 @@ class kb_meta_decoder:
                             'concurrent_njsw_tasks': 50,
                             'max_retries': 2}
 
-        self.log(console, "RUNNING all variant calling in parallel.")
-        self.log(console, "\n" + pformat(batch_run_params))
-        self.log(console, str(datetime.now()))
+        self.log(console, "Running all variant calling in parallel.")
+        print("\n" + pformat(batch_run_params))
+        print(str(datetime.now()))
         kbparallel_results = parallelClient.run_batch(batch_run_params)
 
         for fd in kbparallel_results['results']:
            if fd['result_package']['error'] is not None:
                raise ValueError('kb_parallel failed to complete without throwing an error on at least one of the nodes.')
 
+        # make index/explanation of HTML output files
+        # and load output into shock
+        reportName = 'kb_call_variants_report_'+str(uuid.uuid4())
+        html_dir = '/kb/module/work/tmp/'+reportName
+        os.makedirs(html_dir)
+
+        try:
+            dfuClient = DFUClient(self.callback_url, token=ctx['token'], service_ver=self.SERVICE_VER)
+        except Exception as e:
+            raise ValueError('Unable to instantiate dfuClient with callback_url: '+ self.callback_url +' ERROR: ' + str(e))
+
         ### combine individual reports
         output_files = []
+        html_message = ''
+        has_any_png = False
         for fd in kbparallel_results['results']:
             # self.log(console, "FD = " + pformat(fd))
             this_report_ref = fd['result_package']['result'][0]['report_ref']
@@ -629,26 +659,65 @@ class kb_meta_decoder:
             # self.log(console, "REPORT = "+pformat(this_report_obj))
             report_text += this_report_obj['text_message']
             report_text += "\n\n"
-            reads_pattern = '\'reads_ref\': \'(\d+/\d+/\d+)\''
+            reads_pattern = 'Mapping reads (.+)? (\d+/\d+/\d+)'
             match = re.search(reads_pattern, this_report_obj['text_message']) 
             if match:
-                reads_ref = match.group(1)
+                reads_name = match.group(1)
+                reads_ref = match.group(2)
             else:
+                reads_name = "unknown"
                 reads_ref = "unknown"
+
+            has_png = False
             for link in this_report_obj['file_links']:
-                output_files.append({'shock_id': link['URL'].split('/')[-1],
-                                     'name': link['name'],
+                name = link['name'].replace('.','.'+reads_name+'.',1)
+                shock_id = link['URL'].split('/')[-1]
+                output_files.append({'shock_id': shock_id,
+                                     'name': name,
                                      'label': link['label']+' for '+reads_ref,
                                      'description': link['description']+' for '+reads_ref})
+                # save png files for combined html report
+                if link['label']=='PNG file':
+                    has_png = True
+                    has_any_png = True
+                    png_file_path = dfuClient.shock_to_file({'shock_id': shock_id,
+                                                             'file_path': html_dir,
+                                                             'unpack': 'unpack'})['file_path']
+                    html_message += '<p>Figure for '+reads_name+' mapped to '+assembly_name+':<p><img src="'+os.path.basename(png_file_path)+'">'
+
+            if not has_png:
+                html_message += '<p>No SNPs found when mapping '+reads_name+' to '+assembly_name+'.'                
+
+        if has_any_png:
+            html_message = '<b>Figures: Distribution of genotypes/strains across metagenome samples:</b>:\n'+ \
+                '<p>In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.\n'+ html_message
+
+        html_message += '<p>\n<pre>\n'+ \
+            '\n'.join(console)+ \
+            '\n</pre>\n'
+
+        output_html = []
+        html_file_path = os.path.join(html_dir,'index.html')
+        with open(html_file_path, 'w') as html_handle:
+            html_handle.write(html_message)
+        try:
+            dfu_output = dfuClient.file_to_shock({'file_path': html_file_path,
+                                                  'pack': 'zip',
+                                                  'make_handle': 0})
+            output_html.append({'shock_id': dfu_output['shock_id'],
+                                'name': 'index.html',
+                                'label': 'Call variants report'})
+        except:
+            raise ValueError('Logging exception loading html_report to shock')
+
 
         ### build and save the combined report
-        reportName = 'kb_call_variants_report_'+str(uuid.uuid4())
         reportObj = {'objects_created': [],
                      'message': report_text,
-                     'direct_html': None,
-                     'direct_html_link_index': None,
+                     'direct_html': html_message,
+                     'direct_html_link_index': 0,
                      'file_links': output_files,
-                     'html_links': [],
+                     'html_links': output_html,
                      'workspace_name': params['workspace_name'],
                      'report_object_name': reportName
                      }
@@ -688,8 +757,8 @@ class kb_meta_decoder:
         # return variables are: output
         #BEGIN call_variants_single
         console = []
-        self.log(console, 'Running call_variants_single with parameters: ')
-        self.log(console, "\n"+pformat(params))
+        print('Running call_variants_single with parameters: ')
+        print("\n"+pformat(params))
 
         token = ctx['token']
         env = os.environ.copy()
@@ -712,6 +781,11 @@ class kb_meta_decoder:
         if 'provenance' in ctx:
             provenance = ctx['provenance']
         provenance[0]['input_ws_objects']=[str(params['assembly_ref']),str(params['reads_ref'])]
+
+        # report real name of reads
+        reads_name = self.get_object_name(token, params['reads_ref'])
+        assembly_name = self.get_object_name(token, params['assembly_ref'])
+        self.log(console, 'Mapping reads '+str(reads_name)+' ('+params['reads_ref']+') to '+str(assembly_name)+' ('+str(params['assembly_ref'])+')')
 
         # make dedicated output dir
         output_dir = self.setup_output_dir(console)
@@ -763,7 +837,7 @@ class kb_meta_decoder:
         except Exception as e:
             print("vuclient didn't work.")
             cmdstring = "cat /kb/module/work/tmp/*vcf.errors_summary*"
-            self.log(console,"command: "+cmdstring);
+            print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
                 print(line.decode("utf-8").rstrip())
@@ -795,6 +869,13 @@ class kb_meta_decoder:
                                  'name': os.path.basename(pdf_file_path),
                                  'label': 'PDF file',
                                  'description': 'PDF file'})
+        if png_file_path:
+            dfu_output = dfuClient.file_to_shock({'file_path': png_file_path,
+                                                  'make_handle': 0})
+            output_files.append({'shock_id': dfu_output['shock_id'],
+                                 'name': os.path.basename(png_file_path),
+                                 'label': 'PNG file',
+                                 'description': 'PNG file'})
 
         # get vcf stats
         self.get_vcf_stats(console,vcf_file_path)
@@ -818,7 +899,7 @@ class kb_meta_decoder:
             # move png file to html dir
             os.rename(png_file_path, os.path.join(html_dir,os.path.basename(png_file_path)))
         else:
-            html_message = '<b>No variants found.</b>\n'
+            html_message = '<b>No SNPs found.</b>\n'
 
         html_file_path = os.path.join(html_dir,'index.html')
         with open(html_file_path, 'w') as html_handle:
@@ -878,8 +959,8 @@ class kb_meta_decoder:
         # return variables are: output
         #BEGIN calculate_population_statistics
         console = []
-        self.log(console, 'Running calculate_population_statistics with parameters: ')
-        self.log(console, "\n"+pformat(params))
+        print('Running calculate_population_statistics with parameters: ')
+        print("\n"+pformat(params))
 
         token = ctx['token']
         env = os.environ.copy()

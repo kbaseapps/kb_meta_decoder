@@ -1,14 +1,14 @@
 #
 # define display information
 #
-name: Call Variants
+name: Call SNPs
 
 tooltip: |
-    Call variants relative to a reference sequence, with SAMtools mpileup
+    Call SNPs relative to a reference sequence, with SAMtools mpileup
 
 screenshots: []
 
-icon: icon.png
+icon: Call_SNPs-green.png
 
 #
 # define a set of similar apps that might be useful to the user
@@ -28,13 +28,13 @@ parameters :
         ui-name : |
             Reference assembly
         short-hint : |
-            The reference assembly for which variants will be called.
+            The reference assembly for which SNPs will be called.
 
     reads_refs :
         ui-name : |
             Reads
         short-hint : |
-            All reads sets will be mapped and then used to call variants.
+            All reads sets will be mapped and then used to call SNPs.
 
     min_mapping_quality :
         ui-name : |
@@ -46,16 +46,16 @@ parameters :
         ui-name : |
             Minimum depth
         short-hint : |
-            Minimum coverage depth for calling variants
+            Minimum coverage depth for calling SNPs
 
 description : |
-    <p>This method uses BCFtools to call variants in a reference assembly.  It will first map short reads to this assembly using the "map reads" app.</p>
+    <p>This method uses BCFtools to call SNPs in a reference assembly.  It will first map short reads to this assembly using the "map reads" app.</p>
 
-    <p>The first step is to create a raw VCF file containing variants: <code>bcftools mpileup -a FMT/AD -B -d3000 -qMIN_MAPPING_QUALITY -Ou -f CONTIGS_FILE BAM_FILE | bcftools call --ploidy 1 -m -A > RAW_VCF_FILE</code></p>
+    <p>The first step is to create a raw VCF file containing SNPs: <code>bcftools mpileup -a FMT/AD -B -d3000 -qMIN_MAPPING_QUALITY -Ou -f CONTIGS_FILE BAM_FILE | bcftools call --ploidy 1 -m -A > RAW_VCF_FILE</code></p>
 
     <p>This raw file is then filtered and variant data are output to the filtered VCF: <code>bcftools filter -s LowQual -e 'DP>MIN_DEPTH' RAW_VCF_FILE | bcftools view -v snps > FILTERED_VCF_FILE</code></p>
 
-    <p>This method should create a Variants object to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the variants instead.  The BAM file and filtered VCF file can be downloaded from the report.</p>
+    <p>This method should create a Variants object to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the SNPs instead.  The BAM file and filtered VCF file can be downloaded from the report.</p>
 
     <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
 

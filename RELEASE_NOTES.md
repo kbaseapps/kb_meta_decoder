@@ -1,6 +1,12 @@
 # kb_meta_decoder release notes
 =========================================
 
+0.0.6
+-----
+* Updated reports; limited debug info in Summary
+* Added new icons
+* Changed name of "Call variants" method to "Call SNPs"
+
 0.0.5
 -----
 * Moved each job to separate output dir, to avoid filename collisions in scratch
