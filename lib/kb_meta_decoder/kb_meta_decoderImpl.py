@@ -266,7 +266,7 @@ class kb_meta_decoder:
 
             # convert PDF to PNG
             png_file_path = os.path.join(output_dir,"SNP_profile.png")
-            cmdstring = "pdftoppm -png "+pdf_file_path+" -scale-to-x 200 > "+png_file_path
+            cmdstring = "pdftoppm -png "+pdf_file_path+" -scale-to-x 600 > "+png_file_path
             print(console,"command: "+cmdstring);
             cmdProcess = subprocess.Popen(cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             for line in cmdProcess.stdout:
@@ -659,12 +659,13 @@ class kb_meta_decoder:
             # self.log(console, "REPORT = "+pformat(this_report_obj))
             report_text += this_report_obj['text_message']
             report_text += "\n\n"
-            reads_pattern = 'Mapping reads (.+)? (\d+/\d+/\d+)'
+            reads_pattern = '.*Mapping reads (.+?) (\(\d+/\d+/\d+\)).*'
             match = re.search(reads_pattern, this_report_obj['text_message']) 
             if match:
                 reads_name = match.group(1)
                 reads_ref = match.group(2)
             else:
+                print("unable to parse report: "+this_report_obj['text_message'])
                 reads_name = "unknown"
                 reads_ref = "unknown"
 
@@ -785,7 +786,7 @@ class kb_meta_decoder:
         # report real name of reads
         reads_name = self.get_object_name(token, params['reads_ref'])
         assembly_name = self.get_object_name(token, params['assembly_ref'])
-        self.log(console, 'Mapping reads '+str(reads_name)+' ('+params['reads_ref']+') to '+str(assembly_name)+' ('+str(params['assembly_ref'])+')')
+        self.log(console, 'Mapping reads '+str(reads_name)+' ('+params['reads_ref']+') to '+str(assembly_name)+' ('+str(params['assembly_ref'])+')\n')
 
         # make dedicated output dir
         output_dir = self.setup_output_dir(console)
@@ -877,8 +878,10 @@ class kb_meta_decoder:
                                  'label': 'PNG file',
                                  'description': 'PNG file'})
 
-        # get vcf stats
-        self.get_vcf_stats(console,vcf_file_path)
+        # get vcf stats, save for both html report and summary
+        vcf_stats = []
+        self.get_vcf_stats(vcf_stats,vcf_file_path)
+        console.extend(vcf_stats)
 
         # build report
         reportName = 'kb_call_variants_single_report_'+str(uuid.uuid4())
@@ -892,8 +895,10 @@ class kb_meta_decoder:
         if png_file_path:
             html_message = '<b>Figure: Distribution of genotypes/strains across metagenome samples:</b>:\n'+ \
                 '<p>In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.\n'+ \
-                '<p><img src="'+os.path.basename(png_file_path)+'"><p>\n<pre>\n'+ \
-                '\n'.join(console)+ \
+                '<p><img src="'+os.path.basename(png_file_path)+'"><p>\n'+ \
+                '<b>VCF statistics</b> produced by bcftools:'+ \
+                '<pre>\n'+ \
+                '\n'.join(vcf_stats)+ \
                 '\n</pre>\n'
 
             # move png file to html dir
