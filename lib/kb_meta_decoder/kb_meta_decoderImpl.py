@@ -684,13 +684,13 @@ class kb_meta_decoder:
                     png_file_path = dfuClient.shock_to_file({'shock_id': shock_id,
                                                              'file_path': html_dir,
                                                              'unpack': 'unpack'})['file_path']
-                    html_message += '<p>Figure for '+reads_name+' mapped to '+assembly_name+':<p><img src="'+os.path.basename(png_file_path)+'">'
+                    html_message += '<p><b>Figure for '+reads_name+' mapped to '+assembly_name+':</b><p><img src="'+os.path.basename(png_file_path)+'">'
 
             if not has_png:
                 html_message += '<p>No SNPs found when mapping '+reads_name+' to '+assembly_name+'.'                
 
         if has_any_png:
-            html_message = '<b>Figures: Distribution of genotypes/strains across metagenome samples:</b>:\n'+ \
+            html_message = '<b>Figures: Distribution of genotypes/strains across metagenome samples:</b>\n'+ \
                 '<p>In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.\n'+ html_message
 
         html_message += '<p>\n<pre>\n'+ \
@@ -893,12 +893,12 @@ class kb_meta_decoder:
 
         output_html = []
         if png_file_path:
-            html_message = '<b>Figure: Distribution of genotypes/strains across metagenome samples:</b>:\n'+ \
+            html_message = '<b>Figure: Distribution of genotypes/strains across metagenome samples:</b>\n'+ \
                 '<p>In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.\n'+ \
                 '<p><img src="'+os.path.basename(png_file_path)+'"><p>\n'+ \
                 '<b>VCF statistics</b> produced by bcftools:'+ \
                 '<pre>\n'+ \
-                '\n'.join(vcf_stats)+ \
+                '\n'.join(vcf_stats[1:])+ \
                 '\n</pre>\n'
 
             # move png file to html dir
