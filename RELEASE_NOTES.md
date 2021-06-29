@@ -1,6 +1,12 @@
 # kb_meta_decoder release notes
 =========================================
 
+1.0.0
+-----
+* Updated figure generation for "call snps"
+* Added more documentation
+* Initial non-beta release
+
 0.0.6
 -----
 * Updated reports; limited debug info in Summary

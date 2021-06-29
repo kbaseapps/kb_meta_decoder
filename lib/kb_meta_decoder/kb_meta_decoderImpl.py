@@ -36,9 +36,9 @@ class kb_meta_decoder:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.6"
+    VERSION = "1.0.0"
     GIT_URL = "git@github.com:kbaseapps/kb_meta_decoder.git"
-    GIT_COMMIT_HASH = "b4e83d791155b12efdf049d6021e1446b4bb0a71"
+    GIT_COMMIT_HASH = "c7f8a2777e536f40b4b4e11cf16ff00c0c2cd676"
 
     #BEGIN_CLASS_HEADER
     SERVICE_VER = 'release'
