@@ -55,6 +55,8 @@ description : |
 
     <p>This raw file is then filtered and variant data are output to the filtered VCF: <code>bcftools filter -s LowQual -e 'DP>MIN_DEPTH' RAW_VCF_FILE | bcftools view -v snps > FILTERED_VCF_FILE</code></p>
 
+    <p>This method also displays a figure showing the distribution of genotypes/strains across metagenome samples.  In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.  The figure may be downloaded from the report</p>
+
     <p>This method should create a Variants object to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the SNPs instead.  The BAM file and filtered VCF file can be downloaded from the report.</p>
 
     <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
