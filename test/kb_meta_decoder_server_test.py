@@ -327,8 +327,8 @@ class kb_meta_decoderTest(unittest.TestCase):
         ret = self.serviceImpl.calculate_population_statistics(self.ctx,
                                                                {'workspace_name': test_ws_name,
                                                                 'workspace_id': test_ws_id,
-                                                                'assembly_ref' : test_assembly,
-                                                                'reads_ref' : test_reads})
+                                                                'assembly_ref': test_assembly,
+                                                                'reads_ref': test_reads})
         self.check_created_report(ret)
 
     def test_map_reads_to_reference(self):
@@ -349,10 +349,10 @@ class kb_meta_decoderTest(unittest.TestCase):
         ret = self.serviceImpl.map_reads_to_reference(self.ctx,
                                                       {'workspace_name': test_ws_name,
                                                        'workspace_id': test_ws_id,
-                                                       'assembly_ref' : test_assembly,
-                                                       'reads_ref' : test_reads})
+                                                       'assembly_ref': test_assembly,
+                                                       'reads_ref': test_reads})
         self.check_created_report(ret)
-        
+
     def test_call_variants_small(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -395,12 +395,12 @@ class kb_meta_decoderTest(unittest.TestCase):
         ret = self.serviceImpl.call_variants_single(self.ctx,
                                                     {'workspace_name': test_ws_name,
                                                      'workspace_id': test_ws_id,
-                                                     'assembly_ref' : test_assembly,
-                                                     'reads_ref' : test_reads,
-                                                     'min_mapping_quality' : '30',
-                                                     'min_depth' : '50'})
+                                                     'assembly_ref': test_assembly,
+                                                     'reads_ref': test_reads,
+                                                     'min_mapping_quality': '30',
+                                                     'min_depth': '50'})
         self.check_created_report(ret)
-        
+
     def test_call_variants_small_parallel(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
