@@ -2,9 +2,7 @@
 import os
 import time
 import unittest
-import sys
 from configparser import ConfigParser
-from pprint import pprint
 import requests
 import shutil
 
@@ -17,6 +15,7 @@ from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.AbstractHandleClient import AbstractHandle as HandleService
 from installed_clients.DataFileUtilClient import DataFileUtil
 from installed_clients.ReadsUtilsClient import ReadsUtils
+
 
 class kb_meta_decoderTest(unittest.TestCase):
 
@@ -99,9 +98,9 @@ class kb_meta_decoderTest(unittest.TestCase):
 
     @classmethod
     def upload_file_to_shock_and_get_handle(cls, test_file):
-        '''                                                                          
-        Uploads the file in test_file to shock and returns the node and a            
-        handle to the node.                                                          
+        '''
+        Uploads the file in test_file to shock and returns the node and a
+        handle to the node.
         '''
         # file can't be in /kb/module/test or dfu won't find it
         temp_file = os.path.join("/kb/module/work/tmp", os.path.basename(test_file))
@@ -109,7 +108,7 @@ class kb_meta_decoderTest(unittest.TestCase):
 
         print('loading file to shock: ' + test_file)
         fts = cls.dfu.file_to_shock({'file_path': temp_file,
-                                     'make_handle':True})
+                                     'make_handle': True})
 
         cls.nodes_to_delete.append(fts['shock_id'])
         cls.handles_to_delete.append(fts['handle']['hid'])
@@ -121,7 +120,7 @@ class kb_meta_decoderTest(unittest.TestCase):
                      rev_reads=None, single_end=False, sequencing_tech='Illumina',
                      single_genome='1'):
 
-        ob = dict(object_body)  # copy                                               
+        ob = dict(object_body)  # copy
         ob['sequencing_tech'] = sequencing_tech
         ob['wsname'] = cls.getWsName()
         ob['name'] = wsobjname
@@ -146,14 +145,14 @@ class kb_meta_decoderTest(unittest.TestCase):
         obj_ref = cls.ru.upload_reads(ob)
         objdata = cls.wsClient.get_object_info_new({
             'objects': [{'ref': obj_ref['obj_ref']}]
-            })[0]
+        })[0]
         cls.staged[wsobjname] = {'info': objdata,
                                  'ref': cls.make_ref(objdata),
                                  'fwd_node_id': fwd_id,
                                  'rev_node_id': rev_id,
                                  'fwd_handle_id': fwd_handle_id,
                                  'rev_handle_id': rev_handle_id
-                                }
+                                 }
 
     @classmethod
     def upload_assembly(cls, a_name, test_file):
@@ -169,15 +168,15 @@ class kb_meta_decoderTest(unittest.TestCase):
              'assembly_name': a_name})
         objdata = cls.wsClient.get_object_info_new({
             'objects': [{'ref': ref}]
-            })[0]
+        })[0]
         cls.staged[a_name] = {'info': objdata,
                               'ref': cls.make_ref(objdata)}
 
     @classmethod
     def setupTestData(cls):
         print('Shock url ' + cls.shockURL)
-        # print('WS url ' + cls.wsClient.url)                                                       
-        # print('Handle service url ' + cls.hs.url)                                                 
+        # print('WS url ' + cls.wsClient.url)
+        # print('Handle service url ' + cls.hs.url)
         print('staging data')
 
         mapped_reads = {'file': 'data/mapped_reads.fastq',
@@ -186,27 +185,38 @@ class kb_meta_decoderTest(unittest.TestCase):
         cls.upload_reads('mapped_reads', {'single_genome': 0}, mapped_reads)
 
         mapped_reads_1 = {'file': 'data/mapped_reads_1.fastq',
-                        'name': 'mapped_reads_1.fastq',
-                        'type': 'fastq'}
+                          'name': 'mapped_reads_1.fastq',
+                          'type': 'fastq'}
         cls.upload_reads('mapped_reads_1', {'single_genome': 0}, mapped_reads_1)
 
         mapped_reads_2 = {'file': 'data/mapped_reads_2.fastq',
-                        'name': 'mapped_reads_2.fastq',
-                        'type': 'fastq'}
+                          'name': 'mapped_reads_2.fastq',
+                          'type': 'fastq'}
         cls.upload_reads('mapped_reads_2', {'single_genome': 0}, mapped_reads_2)
 
-        cls.upload_assembly('assembly_withhits', 'data/genome_fragment_withhits.fa');
+        cls.upload_assembly('assembly_withhits', 'data/genome_fragment_withhits.fa')
 
-        cls.upload_assembly('assembly_nohits', 'data/genome_fragment_nohits.fa');
+        cls.upload_assembly('assembly_nohits', 'data/genome_fragment_nohits.fa')
 
         print('Data staged.')
 
+    def check_created_report(self, result):
+        """ basic checks on a created report
+        Args:
+          result: output from report creation call
+        Return:
+          object data from created report
+        """
+        self.assertEqual(self.serviceImpl.status(self.ctx)[0]['state'], 'OK')
+        self.assertTrue(len(result[0]['report_ref']))
+        self.assertTrue(len(result[0]['report_name']))
+        obj = self.dfu.get_objects({'object_refs': [result[0]['report_ref']]})
+        return obj['data'][0]['data']
 
     @classmethod
     def make_ref(self, object_info):
         return str(object_info[6]) + '/' + str(object_info[0]) + \
             '/' + str(object_info[4])
-
 
     @unittest.skip("requires private dataset; use tests on public data instead")
     def test_call_variants(self):
@@ -225,13 +235,13 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_id = "35222"
         test_assembly = "35222/2/1"
         test_reads = "35222/3/1"
-        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
         ret = self.serviceImpl.call_variants_single(self.ctx, {'workspace_name': test_ws_name,
-                                                        'workspace_id': test_ws_id,
-                                                        'assembly_ref' : test_assembly,
-                                                        'reads_ref' : test_reads,
-                                                        'min_mapping_quality' : '30',
-                                                        'min_depth' : '50'})
+                                                               'workspace_id': test_ws_id,
+                                                               'assembly_ref': test_assembly,
+                                                               'reads_ref': test_reads,
+                                                               'min_mapping_quality': '30',
+                                                               'min_depth': '50'})
+        self.check_created_report(ret)
 
     @unittest.skip("requires private dataset; use tests on public data instead")
     def test_call_variants_readsset(self):
@@ -250,13 +260,15 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_id = "35222"
         test_assembly = "35222/2/1"
         test_reads = "35222/93/1"
-        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
-        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
-                                                        'workspace_id': test_ws_id,
-                                                        'assembly_ref' : test_assembly,
-                                                        'reads_refs' : [test_reads],
-                                                        'min_mapping_quality' : '30',
-                                                        'min_depth' : '50'})
+        ret = self.serviceImpl.call_variants(self.ctx,
+                                             {'workspace_name': test_ws_name,
+                                              'workspace_id': test_ws_id,
+                                              'assembly_ref': test_assembly,
+                                              'reads_refs': [test_reads],
+                                              'min_mapping_quality': '30',
+                                              'min_depth': '50'})
+        self.check_created_report(ret)
+
     @unittest.skip("requires private dataset; use tests on public data instead")
     def test_call_variants_readsset_multi(self):
         # Prepare test objects in workspace if needed using
@@ -274,13 +286,14 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_id = "35222"
         test_assembly = "35222/2/1"
         test_reads = ["35222/93/1", "35222/103/1"]
-        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
-        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
-                                                        'workspace_id': test_ws_id,
-                                                        'assembly_ref' : test_assembly,
-                                                        'reads_refs' : test_reads,
-                                                        'min_mapping_quality' : '30',
-                                                        'min_depth' : '50'})
+        ret = self.serviceImpl.call_variants(self.ctx,
+                                             {'workspace_name': test_ws_name,
+                                              'workspace_id': test_ws_id,
+                                              'assembly_ref': test_assembly,
+                                              'reads_refs': test_reads,
+                                              'min_mapping_quality': '30',
+                                              'min_depth': '50'})
+        self.check_created_report(ret)
 
     @unittest.skip("requires private dataset; use tests on public data instead")
     def test_calc_pop_stat(self):
@@ -289,11 +302,12 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_id = "35222"
         test_assembly = "35222/2/1"
         test_reads = "35222/3/1"
-        ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
-                                                        'workspace_id': test_ws_id,
-                                                        'assembly_ref' : test_assembly,
-                                                        'reads_ref' : test_reads})
-
+        ret = self.serviceImpl.calculate_population_statistics(self.ctx,
+                                                               {'workspace_name': test_ws_name,
+                                                                'workspace_id': test_ws_id,
+                                                                'assembly_ref': test_assembly,
+                                                                'reads_ref': test_reads})
+        self.check_created_report(ret)
 
     def test_call_variants_small(self):
         # Prepare test objects in workspace if needed using
@@ -310,13 +324,14 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_id = self.wsID
         test_assembly = self.staged['assembly_withhits']['ref']
         test_reads = [self.staged['mapped_reads']['ref']]
-        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
-        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
-                                                        'workspace_id': test_ws_id,
-                                                        'assembly_ref' : test_assembly,
-                                                        'reads_refs' : test_reads,
-                                                        'min_mapping_quality' : '30',
-                                                        'min_depth' : '50'})
+        ret = self.serviceImpl.call_variants(self.ctx,
+                                             {'workspace_name': test_ws_name,
+                                              'workspace_id': test_ws_id,
+                                              'assembly_ref': test_assembly,
+                                              'reads_refs': test_reads,
+                                              'min_mapping_quality': '30',
+                                              'min_depth': '50'})
+        self.check_created_report(ret)
 
     def test_call_variants_small_parallel(self):
         # Prepare test objects in workspace if needed using
@@ -333,13 +348,14 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_id = self.wsID
         test_assembly = self.staged['assembly_withhits']['ref']
         test_reads = [self.staged['mapped_reads_1']['ref'], self.staged['mapped_reads_2']['ref']]
-        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
-        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
-                                                        'workspace_id': test_ws_id,
-                                                        'assembly_ref' : test_assembly,
-                                                        'reads_refs' : test_reads,
-                                                        'min_mapping_quality' : '30',
-                                                        'min_depth' : '50'})
+        ret = self.serviceImpl.call_variants(self.ctx,
+                                             {'workspace_name': test_ws_name,
+                                              'workspace_id': test_ws_id,
+                                              'assembly_ref': test_assembly,
+                                              'reads_refs': test_reads,
+                                              'min_mapping_quality': '30',
+                                              'min_depth': '50'})
+        self.check_created_report(ret)
 
     def test_call_variants_small_nohits(self):
         # Prepare test objects in workspace if needed using
@@ -356,10 +372,11 @@ class kb_meta_decoderTest(unittest.TestCase):
         test_ws_id = self.wsID
         test_assembly = self.staged['assembly_nohits']['ref']
         test_reads = [self.staged['mapped_reads']['ref']]
-        # ret = self.serviceImpl.calculate_population_statistics(self.ctx, {'workspace_name': test_ws_name,
-        ret = self.serviceImpl.call_variants(self.ctx, {'workspace_name': test_ws_name,
-                                                        'workspace_id': test_ws_id,
-                                                        'assembly_ref' : test_assembly,
-                                                        'reads_refs' : test_reads,
-                                                        'min_mapping_quality' : '30',
-                                                        'min_depth' : '50'})
+        ret = self.serviceImpl.call_variants(self.ctx,
+                                             {'workspace_name': test_ws_name,
+                                              'workspace_id': test_ws_id,
+                                              'assembly_ref': test_assembly,
+                                              'reads_refs': test_reads,
+                                              'min_mapping_quality': '30',
+                                              'min_depth': '50'})
+        self.check_created_report(ret)
