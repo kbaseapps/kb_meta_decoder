@@ -219,7 +219,7 @@ class kb_meta_decoderTest(unittest.TestCase):
             '/' + str(object_info[4])
 
     @unittest.skip("requires private dataset; use tests on public data instead")
-    def test_call_variants(self):
+    def test_call_variants_private(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
         #                                  'objects': []})
@@ -296,7 +296,7 @@ class kb_meta_decoderTest(unittest.TestCase):
         self.check_created_report(ret)
 
     @unittest.skip("requires private dataset; use tests on public data instead")
-    def test_calc_pop_stat(self):
+    def test_calc_pop_stats_private(self):
         # these test objects are in appdev:
         test_ws_name = "jmc:narrative_1576867921697"
         test_ws_id = "35222"
@@ -309,6 +309,50 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                                 'reads_ref': test_reads})
         self.check_created_report(ret)
 
+    def test_calc_pop_stats(self):
+        # Prepare test objects in workspace if needed using
+        # self.getWsClient().save_objects({'workspace': self.getWsName(),
+        #                                  'objects': []})
+        #
+        # Run your method by
+        # ret = self.getImpl().your_method(self.getContext(), parameters...)
+        #
+        # Check returned data with
+        # self.assertEqual(ret[...], ...) or other unittest methods
+
+        test_ws_name = self.wsName
+        test_ws_id = self.wsID
+        test_assembly = self.staged['assembly_withhits']['ref']
+        test_reads = self.staged['mapped_reads']['ref']
+        ret = self.serviceImpl.calculate_population_statistics(self.ctx,
+                                                               {'workspace_name': test_ws_name,
+                                                                'workspace_id': test_ws_id,
+                                                                'assembly_ref' : test_assembly,
+                                                                'reads_ref' : test_reads})
+        self.check_created_report(ret)
+
+    def test_map_reads_to_reference(self):
+        # Prepare test objects in workspace if needed using
+        # self.getWsClient().save_objects({'workspace': self.getWsName(),
+        #                                  'objects': []})
+        #
+        # Run your method by
+        # ret = self.getImpl().your_method(self.getContext(), parameters...)
+        #
+        # Check returned data with
+        # self.assertEqual(ret[...], ...) or other unittest methods
+
+        test_ws_name = self.wsName
+        test_ws_id = self.wsID
+        test_assembly = self.staged['assembly_withhits']['ref']
+        test_reads = self.staged['mapped_reads']['ref']
+        ret = self.serviceImpl.map_reads_to_reference(self.ctx,
+                                                      {'workspace_name': test_ws_name,
+                                                       'workspace_id': test_ws_id,
+                                                       'assembly_ref' : test_assembly,
+                                                       'reads_ref' : test_reads})
+        self.check_created_report(ret)
+        
     def test_call_variants_small(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -333,6 +377,30 @@ class kb_meta_decoderTest(unittest.TestCase):
                                               'min_depth': '50'})
         self.check_created_report(ret)
 
+    def test_call_variants_single(self):
+        # Prepare test objects in workspace if needed using
+        # self.getWsClient().save_objects({'workspace': self.getWsName(),
+        #                                  'objects': []})
+        #
+        # Run your method by
+        # ret = self.getImpl().your_method(self.getContext(), parameters...)
+        #
+        # Check returned data with
+        # self.assertEqual(ret[...], ...) or other unittest methods
+
+        test_ws_name = self.wsName
+        test_ws_id = self.wsID
+        test_assembly = self.staged['assembly_withhits']['ref']
+        test_reads = self.staged['mapped_reads']['ref']
+        ret = self.serviceImpl.call_variants_single(self.ctx,
+                                                    {'workspace_name': test_ws_name,
+                                                     'workspace_id': test_ws_id,
+                                                     'assembly_ref' : test_assembly,
+                                                     'reads_ref' : test_reads,
+                                                     'min_mapping_quality' : '30',
+                                                     'min_depth' : '50'})
+        self.check_created_report(ret)
+        
     def test_call_variants_small_parallel(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
