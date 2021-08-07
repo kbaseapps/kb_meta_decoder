@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# BEGIN_HEADER
+#BEGIN_HEADER
 import sys
 import logging
 import os
@@ -18,7 +18,7 @@ from installed_clients.ReadsUtilsClient import ReadsUtils as RUClient
 # from installed_clients.VariationUtilClient import VariationUtil as VUClient
 from installed_clients.KBParallelClient import KBParallel
 from SetAPI.SetAPIServiceClient import SetAPI
-# END_HEADER
+#END_HEADER
 
 
 class kb_meta_decoder:
@@ -40,7 +40,7 @@ class kb_meta_decoder:
     GIT_URL = "git@github.com:kbaseapps/kb_meta_decoder.git"
     GIT_COMMIT_HASH = "c7f8a2777e536f40b4b4e11cf16ff00c0c2cd676"
 
-    # BEGIN_CLASS_HEADER
+    #BEGIN_CLASS_HEADER
     SERVICE_VER = 'release'
 
     def log(self, target, message):
@@ -352,7 +352,7 @@ class kb_meta_decoder:
         output_dir = self.setup_output_dir(console)
 
         try:
-            cmdstring = "cd /meta_decoder && " + \
+            cmdstring = "cd /kb/module/meta_decoder && " + \
                 "ln -s /usr/bin/python3 bin/python && " + \
                 "mkdir input_dir && cd input_dir && " + \
                 "ln -s " + reads_file_path+" . && " + \
@@ -380,9 +380,11 @@ class kb_meta_decoder:
                          console):
         try:
             self.log(console, "Running meta_decoder.\n")
-            cmdstring = "cd /meta_decoder && " + \
+            cmdstring = "cd /kb/module/meta_decoder && " + \
                 "./bin/python meta_decoder.py -i input_dir -inf .fastq --r input_dir --rf .fa --s 1 --o output_dir --t 1 --bwa /usr/local/bin/bwa && " + \
-                "/bin/sh sub_metadecoder/0.sh"
+                "/bin/sed -e 's/python/\/usr\/bin\/python2/' < sub_metadecoder/0.sh > x && " + \
+                "mv x sub_metadecoder/0.sh && " + \
+                "/bin/bash meta.decoder.sh"
             print(console, "command: "+cmdstring)
             cmdProcess = subprocess.Popen(
                 cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -404,7 +406,7 @@ class kb_meta_decoder:
                   console):
         try:
             print(console, "Making HTML.\n")
-            cmdstring = "cd /meta_decoder && " + \
+            cmdstring = "cd /kb/module/meta_decoder && " + \
                 "./bin/python meta_decoder.py --o output_dir --html T && " + \
                 "sh meta.decoder.visual.sh"
             print(console, "command: "+cmdstring)
@@ -435,13 +437,13 @@ class kb_meta_decoder:
         obj_name = obj_info[NAME_I]
         return obj_name
 
-    # END_CLASS_HEADER
+    #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
     # be found
 
     def __init__(self, config):
-        # BEGIN_CONSTRUCTOR
+        #BEGIN_CONSTRUCTOR
         self.scratch = os.path.abspath(config['scratch'])
         self.workspace_url = config['workspace-url']
         self.service_wizard_url = config['srv-wiz-url']
@@ -452,7 +454,8 @@ class kb_meta_decoder:
 
         if not os.path.exists(self.scratch):
             os.makedirs(self.scratch)
-        # END_CONSTRUCTOR
+            
+        #END_CONSTRUCTOR
         pass
 
     def map_reads_to_reference(self, ctx, params):
@@ -467,7 +470,8 @@ class kb_meta_decoder:
         """
         # ctx is the context object
         # return variables are: output
-        # BEGIN map_reads_to_reference
+        
+        #BEGIN map_reads_to_reference
         console = []
         print('Running map_reads_to_reference with parameters: ')
         print("\n"+pformat(params))
@@ -550,7 +554,7 @@ class kb_meta_decoder:
 
         output = {'report_name': report_info['name'], 'report_ref': report_info['ref']}
 
-        # END map_reads_to_reference
+        #END map_reads_to_reference
 
         # At some point might do deeper type checking...
         if not isinstance(output, dict):
@@ -572,7 +576,7 @@ class kb_meta_decoder:
         """
         # ctx is the context object
         # return variables are: output
-        # BEGIN call_variants
+        #BEGIN call_variants
         console = []
         print('Running call_variants with parameters: ')
         print("\n"+pformat(params))
@@ -791,7 +795,7 @@ class kb_meta_decoder:
         # construct the output to send back
         output = {'report_name': report_info['name'], 'report_ref': report_info['ref']}
 
-        # END call_variants
+        #END call_variants
 
         # At some point might do deeper type checking...
         if not isinstance(output, dict):
@@ -813,7 +817,7 @@ class kb_meta_decoder:
         """
         # ctx is the context object
         # return variables are: output
-        # BEGIN call_variants_single
+        #BEGIN call_variants_single
         console = []
         print('Running call_variants_single with parameters: ')
         print("\n"+pformat(params))
@@ -1013,7 +1017,7 @@ class kb_meta_decoder:
 
         output = {'report_name': report_info['name'], 'report_ref': report_info['ref']}
 
-        # END call_variants_single
+        #END call_variants_single
 
         # At some point might do deeper type checking...
         if not isinstance(output, dict):
@@ -1034,7 +1038,7 @@ class kb_meta_decoder:
         """
         # ctx is the context object
         # return variables are: output
-        # BEGIN calculate_population_statistics
+        #BEGIN calculate_population_statistics
         console = []
         print('Running calculate_population_statistics with parameters: ')
         print("\n"+pformat(params))
@@ -1073,7 +1077,9 @@ class kb_meta_decoder:
                                               download_dir)
 
         # set up meta_decoder paths
-        output_dir = self.setup_paths(console, reads_file_path, contigs_file_path)
+        output_dir = self.setup_paths(console,
+                                      reads_file_path,
+                                      contigs_file_path)
 
         # run meta_decoder
         self.run_meta_decoder(console)
@@ -1228,7 +1234,7 @@ class kb_meta_decoder:
 
         output = {'report_name': report_info['name'], 'report_ref': report_info['ref']}
 
-        # END calculate_population_statistics
+        #END calculate_population_statistics
 
         # At some point might do deeper type checking...
         if not isinstance(output, dict):
@@ -1238,11 +1244,11 @@ class kb_meta_decoder:
         return [output]
 
     def status(self, ctx):
-        # BEGIN_STATUS
+        #BEGIN_STATUS
         returnVal = {'state': "OK",
                      'message': "",
                      'version': self.VERSION,
                      'git_url': self.GIT_URL,
                      'git_commit_hash': self.GIT_COMMIT_HASH}
-        # END_STATUS
+        #END_STATUS
         return [returnVal]

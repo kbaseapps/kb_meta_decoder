@@ -16,6 +16,7 @@ RUN pip3 install openopt numpy scipy FuncDesigner DerApproximator Cython pandas 
 # still need some python2 code for strainfinder v1
 RUN pip2 install openopt numpy scipy FuncDesigner DerApproximator Cython
 RUN git clone https://github.com/lh3/bwa.git && cd bwa && make && cp bwa /usr/local/bin/
+RUN pip3 install --upgrade numpy
 RUN git clone -b py3 https://github.com/caozhichongchong/meta_decoder.git && cd meta_decoder && git checkout 97ac047cbdd0f89ec04686688f3f9d2069f2b664 && git clone https://bitbucket.org/yonatanf/strainfinder && cd strainfinder && python2 setup_cython.py build_ext --inplace
 ENV PATH $PATH:/kb/module/meta_decoder:/kb/module/meta_decoder/strainfinder
 
