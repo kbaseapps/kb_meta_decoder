@@ -354,12 +354,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                        'assembly_ref': test_assembly,
                                                        'reads_ref': test_reads})
         self.check_created_report(ret)
-<<<<<<< HEAD
         
     # @unittest.skip("working")
-=======
-
->>>>>>> f28f86f616c34d10fdd82f7249adbd14efb5dbef
     def test_call_variants_small(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
@@ -408,12 +404,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                      'min_mapping_quality': '30',
                                                      'min_depth': '50'})
         self.check_created_report(ret)
-<<<<<<< HEAD
         
     # @unittest.skip("working")
-=======
-
->>>>>>> f28f86f616c34d10fdd82f7249adbd14efb5dbef
     def test_call_variants_small_parallel(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
