@@ -41,7 +41,9 @@ description : |
 
     <p>The mapping is done using <code>bwa mem CONTIGS_FILE READS_FILE | samtools view -S -b > BAM_FILE</code></p>
 
-    <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+    <p>The version of BWA-MEM used is from the Git repo at https://github.com/lh3/bwa.git, with commit hash 3ddd7b87d41f89a404d95f083fb37c369f70d783.</p>
+
+    <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://www.kbase.us/support/">contact us</a>.</p>
 
 publications :
     -

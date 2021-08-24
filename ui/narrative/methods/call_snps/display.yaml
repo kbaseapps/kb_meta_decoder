@@ -57,9 +57,15 @@ description : |
 
     <p>This method also displays a figure showing the distribution of genotypes/strains across reads libraries, assuming each reads library represents a single metagenome sample.  In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.  The figure may be downloaded from the report.</p>
 
+    <p>The version of BWA-MEM used to map reads to the reference is from the Git repo at https://github.com/lh3/bwa.git, with commit hash 3ddd7b87d41f89a404d95f083fb37c369f70d783.</p>
+
+    <p>The version of meta_decoder used to make the figure is from the Git repo at https://github.com/caozhichongchong/meta_decoder.git, with the py3 branch and commit hash 192bb32b13b0d0b73cdea872602171d8b5032649.
+
+    <p>Meta_decoder in turn uses strainFinder version 1, from the Git repo at https://bitbucket.org/yonatanf/strainfinder, with commit hash 720087d84b4998a0ab7308880e48249c184dd0c2.
+
     <p>This method should create a Variants object to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the SNPs instead.  The BAM file and filtered VCF file can be downloaded from the report.</p>
 
-    <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+    <p><strong>Team members who deployed this App in KBase</strong>: John-Marc Chandonia. For questions, please <a href="http://www.kbase.us/support/">contact us</a>.</p>
 
 publications :
     -

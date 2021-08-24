@@ -1,6 +1,11 @@
 # kb_meta_decoder release notes
 =========================================
 
+1.0.1
+-----
+* Updated documentation
+* Made "calculate population statistics" inactive until upstream is fixed
+
 1.0.0
 -----
 * Updated figure generation for "call snps"
