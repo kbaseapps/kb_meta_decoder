@@ -59,9 +59,9 @@ description : |
 
     <p>The version of BWA-MEM [1] used to map reads to the reference is from the Git repo at https://github.com/lh3/bwa.git, with commit hash 3ddd7b87d41f89a404d95f083fb37c369f70d783.</p>
 
-    <p>The version of meta_decoder [2] used to make the figure is from the Git repo at https://github.com/caozhichongchong/meta_decoder.git, with the py3 branch and commit hash 192bb32b13b0d0b73cdea872602171d8b5032649.
+    <p>The version of meta_decoder [2] used to make the figure is from the Git repo at https://github.com/caozhichongchong/meta_decoder.git, with the py3 branch and commit hash 192bb32b13b0d0b73cdea872602171d8b5032649.</p>
 
-    <p>Meta_decoder in turn uses strainFinder version 1 [3], from the Git repo at https://bitbucket.org/yonatanf/strainfinder, with commit hash 720087d84b4998a0ab7308880e48249c184dd0c2.
+    <p>Meta_decoder in turn uses strainFinder version 1 [3], from the Git repo at https://bitbucket.org/yonatanf/strainfinder, with commit hash 720087d84b4998a0ab7308880e48249c184dd0c2.</p>
 
     <p>This method should create a Variants object to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the SNPs instead.  The BAM file and filtered VCF file can be downloaded from the report.</p>
 
@@ -75,10 +75,10 @@ publications :
 
     -
         display-text: |
-             [2] https://github.com/caozhichongchong/meta_decoder.git
+             [2] meta_decoder Github Repo
         link: https://github.com/caozhichongchong/meta_decoder.git
 
     -
         display-text: |
-             [3] https://bitbucket.org/yonatanf/strainfinder
+             [3] StrainFinder v1 BitBucket Repo
         link: https://bitbucket.org/yonatanf/strainfinder
