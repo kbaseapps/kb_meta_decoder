@@ -210,7 +210,8 @@ class kb_meta_decoder:
                                contigs_file_path,
                                sorted_bam_file_path,
                                min_mapping_quality,
-                               min_depth):
+                               min_depth,
+                               max_depth):
         try:
             output_dir = os.path.dirname(contigs_file_path)
 
@@ -237,7 +238,8 @@ class kb_meta_decoder:
             # filter and call variants
             self.log(console, "Filtering variants.\n")
             cmdstring = "bcftools filter -s LowQual -e 'DP>" + \
-                str(min_depth)+"' "+raw_vcf_file_path+" | bcftools view -v snps > "+vcf_file_path
+                str(max_depth)+" || DP<" + str(min_depth)+"' " + \
+                raw_vcf_file_path+" | bcftools view -v snps > "+vcf_file_path
             print(console, "command: "+cmdstring)
             cmdProcess = subprocess.Popen(
                 cmdstring, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -591,7 +593,8 @@ class kb_meta_decoder:
                            'assembly_ref',
                            'reads_refs',
                            'min_mapping_quality',
-                           'min_depth'
+                           'min_depth',
+                           'max_depth'
                            ]
         for required_param in required_params:
             if required_param not in params or params[required_param] is None:
@@ -832,7 +835,8 @@ class kb_meta_decoder:
                            'assembly_ref',
                            'reads_ref',
                            'min_mapping_quality',
-                           'min_depth'
+                           'min_depth',
+                           'max_depth'
                            ]
         for required_param in required_params:
             if required_param not in params or params[required_param] is None:
@@ -885,7 +889,8 @@ class kb_meta_decoder:
                                                     contigs_file_path,
                                                     sorted_bam_file_path,
                                                     params['min_mapping_quality'],
-                                                    params['min_depth'])
+                                                    params['min_depth'],
+                                                    params['max_depth'])
         print("got vcf output "+vcf_file_path)
 
         # graph variants

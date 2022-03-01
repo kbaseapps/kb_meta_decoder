@@ -240,7 +240,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                                'assembly_ref': test_assembly,
                                                                'reads_ref': test_reads,
                                                                'min_mapping_quality': '30',
-                                                               'min_depth': '50'})
+                                                               'min_depth': '3',
+                                                               'max_depth': '50'})
         self.check_created_report(ret)
 
     @unittest.skip("requires private dataset; use tests on public data instead")
@@ -266,7 +267,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                               'assembly_ref': test_assembly,
                                               'reads_refs': [test_reads],
                                               'min_mapping_quality': '30',
-                                              'min_depth': '50'})
+                                              'min_depth': '3',
+                                              'max_depth': '50'})
         self.check_created_report(ret)
 
     @unittest.skip("requires private dataset; use tests on public data instead")
@@ -292,7 +294,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                               'assembly_ref': test_assembly,
                                               'reads_refs': test_reads,
                                               'min_mapping_quality': '30',
-                                              'min_depth': '50'})
+                                              'min_depth': '3',
+                                              'max_depth': '50'})
         self.check_created_report(ret)
 
     @unittest.skip("requires private dataset; use tests on public data instead")
@@ -377,7 +380,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                               'assembly_ref': test_assembly,
                                               'reads_refs': test_reads,
                                               'min_mapping_quality': '30',
-                                              'min_depth': '50'})
+                                              'min_depth': '3',
+                                              'max_depth': '50'})
         self.check_created_report(ret)
 
     # @unittest.skip("working")
@@ -402,7 +406,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                                      'assembly_ref': test_assembly,
                                                      'reads_ref': test_reads,
                                                      'min_mapping_quality': '30',
-                                                     'min_depth': '50'})
+                                                     'min_depth': '3',
+                                                     'max_depth': '50'})
         self.check_created_report(ret)
         
     # @unittest.skip("working")
@@ -427,7 +432,8 @@ class kb_meta_decoderTest(unittest.TestCase):
                                               'assembly_ref': test_assembly,
                                               'reads_refs': test_reads,
                                               'min_mapping_quality': '30',
-                                              'min_depth': '50'})
+                                              'min_depth': '3',
+                                              'max_depth': '50'})
         self.check_created_report(ret)
 
     # @unittest.skip("working")
@@ -452,5 +458,6 @@ class kb_meta_decoderTest(unittest.TestCase):
                                               'assembly_ref': test_assembly,
                                               'reads_refs': test_reads,
                                               'min_mapping_quality': '30',
-                                              'min_depth': '50'})
+                                              'min_depth': '3',
+                                              'max_depth': '50'})
         self.check_created_report(ret)

@@ -22,6 +22,7 @@ module kb_meta_decoder {
         list<string> reads_refs;  /* should be: string mapped_reads_ref; */
 	int min_mapping_quality;
 	int min_depth;
+	int max_depth;
     } CallVariantsParams;
 
     typedef structure {
@@ -31,6 +32,7 @@ module kb_meta_decoder {
         string reads_ref;  /* should be: string mapped_reads_ref; */
 	int min_mapping_quality;
 	int min_depth;
+	int max_depth;
     } CallVariantsSingleParams;
 
     typedef structure {

@@ -1,5 +1,5 @@
 {
-    "ver": "1.0.1",
+    "ver": "1.0.2",
     "authors": [
         "jmc"
     ],
@@ -48,6 +48,17 @@
             "optional": false,
             "advanced": true,
             "allow_multiple": false,
+            "default_values": [ "3" ],
+            "field_type": "text",
+            "text_options": {
+                "validate_as": "int"
+	    }
+        },
+        {
+            "id": "max_depth",
+            "optional": false,
+            "advanced": true,
+            "allow_multiple": false,
             "default_values": [ "50" ],
             "field_type": "text",
             "text_options": {
@@ -81,6 +92,9 @@
                 },{
                     "input_parameter": "min_depth",
                     "target_property": "min_depth"
+                },{
+                    "input_parameter": "max_depth",
+                    "target_property": "max_depth"
                 }
             ],
             "output_mapping": [

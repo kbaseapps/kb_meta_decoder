@@ -1,6 +1,11 @@
 # kb_meta_decoder release notes
 =========================================
 
+1.0.2
+-----
+* Fixed bug in which MIN_DEPTH was treated as MAX_DEPTH
+* Added new MAX_DEPTH parameter to give users more control over DP filtering
+
 1.0.1
 -----
 * Updated documentation
