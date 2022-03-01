@@ -37,7 +37,7 @@ parameters :
             These reads will be mapped to the reference assembly.
 
 description : |
-    <p>This method uses Burrows-Wheeler Aligner (BWA) to index a reference assembly, then align a set of short reads to it using the BWA-MEM algorithm.  A Sequence/Alignment Map object should be created to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the mapping instead.  The output BAM file can be downloaded from the report.</p>
+    <p>This method uses Burrows-Wheeler Aligner (BWA) to index a reference assembly, then align a set of short reads to it using the BWA-MEM algorithm [1].  A Sequence/Alignment Map object should be created to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the mapping instead.  The output BAM file can be downloaded from the report.</p>
 
     <p>The mapping is done using <code>bwa mem CONTIGS_FILE READS_FILE | samtools view -S -b > BAM_FILE</code></p>
 
@@ -48,5 +48,5 @@ description : |
 publications :
     -
         display-text: |
-             Li H, Durbin R. Fast and accurate short read alignment with Burrows–Wheeler transform. Bioinformatics. 2017. 25(14):1754–1760, doi:10.1093/bioinformatics/btp324
+             [1] Li H, Durbin R. Fast and accurate short read alignment with Burrows–Wheeler transform. Bioinformatics. 2017. 25(14):1754–1760, doi:10.1093/bioinformatics/btp324
         link: https://academic.oup.com/bioinformatics/article/25/14/1754/225615

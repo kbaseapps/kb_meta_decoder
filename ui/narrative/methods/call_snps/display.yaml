@@ -55,7 +55,7 @@ parameters :
             Maximum coverage depth for calling SNPs
 
 description : |
-    <p>This method uses BCFtools to call SNPs in a reference assembly.  It will first map short reads to this assembly using the "map reads to a reference sequence" app.</p>
+    <p>This method uses BCFtools [1] to call SNPs in a reference assembly.  It will first map short reads to this assembly using the "map reads to a reference sequence" app.</p>
 
     <p>The first step is to create a raw VCF file containing SNPs: <code>bcftools mpileup -a FMT/AD -B -d3000 -qMIN_MAPPING_QUALITY -Ou -f CONTIGS_FILE BAM_FILE | bcftools call --ploidy 1 -m -A > RAW_VCF_FILE</code></p>
 
@@ -63,11 +63,11 @@ description : |
 
     <p>This method also displays a figure showing the distribution of genotypes/strains across reads libraries, assuming each reads library represents a single metagenome sample.  In each sample, a major genotype/strain is defined as concatenated major alleles where DNA polymorphisms were detected. The left panel of the heatmap lists the reference alleles. The right panel lists the position/locus of a DNA polymorphism on the reference genome. A disagreement with the reference allele is highlighted corresponding to the mutation types (transitions to transversions), and an agreement is colored in grey.  The figure may be downloaded from the report.</p>
 
-    <p>The version of BWA-MEM used to map reads to the reference is from the Git repo at https://github.com/lh3/bwa.git, with commit hash 3ddd7b87d41f89a404d95f083fb37c369f70d783.</p>
+    <p>The version of BWA-MEM [1] used to map reads to the reference is from the Git repo at https://github.com/lh3/bwa.git, with commit hash 3ddd7b87d41f89a404d95f083fb37c369f70d783.</p>
 
-    <p>The version of meta_decoder used to make the figure is from the Git repo at https://github.com/caozhichongchong/meta_decoder.git, with the py3 branch and commit hash 192bb32b13b0d0b73cdea872602171d8b5032649.
+    <p>The version of meta_decoder [2] used to make the figure is from the Git repo at https://github.com/caozhichongchong/meta_decoder.git, with the py3 branch and commit hash 192bb32b13b0d0b73cdea872602171d8b5032649.</p>
 
-    <p>Meta_decoder in turn uses strainFinder version 1, from the Git repo at https://bitbucket.org/yonatanf/strainfinder, with commit hash 720087d84b4998a0ab7308880e48249c184dd0c2.
+    <p>Meta_decoder in turn uses strainFinder version 1 [3], from the Git repo at https://bitbucket.org/yonatanf/strainfinder, with commit hash 720087d84b4998a0ab7308880e48249c184dd0c2.</p>
 
     <p>This method should create a Variants object to store the result.  However, because this object type is not yet available in KBase, this method creates a report on the SNPs instead.  The BAM file and filtered VCF file can be downloaded from the report.</p>
 
@@ -76,5 +76,15 @@ description : |
 publications :
     -
         display-text: |
-             Li H. A statistical framework for SNP calling, mutation discovery, association mapping and population genetical parameter estimation from sequencing data. Bioinformatics. 2011. 27(21):2987–2993. doi:10.1093/bioinformatics/btr509
+             [1] Li H. A statistical framework for SNP calling, mutation discovery, association mapping and population genetical parameter estimation from sequencing data. Bioinformatics. 2011. 27(21):2987–2993. doi:10.1093/bioinformatics/btr509
         link: https://academic.oup.com/bioinformatics/article/27/21/2987/217423
+
+    -
+        display-text: |
+             [2] meta_decoder Github Repo
+        link: https://github.com/caozhichongchong/meta_decoder.git
+
+    -
+        display-text: |
+             [3] StrainFinder v1 BitBucket Repo
+        link: https://bitbucket.org/yonatanf/strainfinder
